@@ -18,8 +18,8 @@ The String reader is the first deliverable. Advancing each later milestone requi
 
 ## Implementation status
 
-Milestones 1 through 4 are complete. Both dynamic and typed loaders accept a String or borrowed IO. The [IO and limits guide](../README.md#reading-from-io-with-limits) covers buffering, EOF, resource budgets and diagnostics. The [typed configuration guide](../README.md#loading-typed-configurations) describes field mapping.
+All five implementation milestones are complete for the local development release. Both dynamic and typed loaders accept a String or borrowed IO. The [IO and limits guide](../README.md#reading-from-io-with-limits) covers buffering, EOF, resource budgets and diagnostics. The [typed configuration guide](../README.md#loading-typed-configurations) describes field mapping.
 
-On Linux x86-64, all 40 project specs pass with the default and forced-scalar scanners on Crystal 1.21.0 and 1.22.3. On each compiler, toml-test v2.2.0 passes all 214 valid and 467 invalid TOML 1.1 decoder cases through both String and IO input, and all 214 encoder cases. Three-byte reads produced identical canonical output for every valid fixture and identical error messages and locations for every invalid fixture. CI runs both scanner spec configurations and both public input paths on the minimum and stable compilers.
+The release checks cover 42 specs, five README examples, and the TOML 1.1 String decoder, IO decoder and encoder suites. The [release verification report](release.md) records compiler versions, build commands, conformance receipts and supported temporal precision.
 
-Milestone 5 covers performance measurement and release preparation. Before release, revisit the 00–59 second range for leap-second inputs.
+The [benchmark report](benchmarking.md) compares equivalent native values on three small configurations and a generated lockfile. It includes all 48 observations, the fixture hashes and the commands for repeating the campaign on an idle host. The shard remains at `0.1.0-dev` pending a publication decision.

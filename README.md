@@ -116,7 +116,7 @@ Both overloads accept the same `max_depth` as the reader. Encoding preserves flo
 
 ```sh
 shards check
-crystal tool format --check src spec scripts
+crystal tool format --check src spec scripts bench
 crystal spec --order=random --error-on-warnings
 crystal spec -Dfused_toml_force_scalar_string_scan --order=random --error-on-warnings
 go install github.com/toml-lang/toml-test/v2/cmd/toml-test@v2.2.0
@@ -127,7 +127,7 @@ crystal build scripts/toml_test_encoder.cr -o bin/toml-test-encoder
 "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder "./bin/toml-test-decoder --io"
 ```
 
-The next milestone covers benchmarking and release preparation. See the [specification and milestones](docs/plan.md).
+On a quiet Core i9-12900HK, native String loading measured 5.03–5.74× faster than Aloli v0.1.7 on three small configurations and 7.06× faster on a generated 2,048-package lockfile. See the [benchmark protocol and raw results](docs/benchmarking.md), [release checks and limitations](docs/release.md), and [implementation plan](docs/plan.md).
 
 ## License and provenance
 

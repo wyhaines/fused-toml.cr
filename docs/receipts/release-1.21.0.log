@@ -1,0 +1,49 @@
++ git rev-parse HEAD
+27eab5b2c105e823ef716e1a4d8c1aebeeecc19c
++ crystal --version
+Crystal 1.21.0 [57cf7da50] (2026-07-16)
+
+LLVM: 20.1.8
+Default target: x86_64-unknown-linux-gnu
++ shards --version
+Shards 0.20.0 [b2b98ca] (2025-12-19)
++ /tmp/fused-toml-bench.dSCxcnP6/toml-test version
+toml-test v2.2.0; go1.23.1 linux/amd64; race=false; cgo=true
++ shards check
+I: Dependencies are satisfied
++ crystal tool format --check src spec scripts bench
++ crystal spec --release --threads 1 --order=4721 --error-on-warnings
+Randomized with seed: 4721
+..........................................
+
+Finished in 14.05 milliseconds
+42 examples, 0 failures, 0 errors, 0 pending
+Randomized with seed: 4721
++ crystal spec -Dfused_toml_force_scalar_string_scan --threads 1 --order=7183 --error-on-warnings
+Randomized with seed: 7183
+..........................................
+
+Finished in 40.47 milliseconds
+42 examples, 0 failures, 0 errors, 0 pending
+Randomized with seed: 7183
++ python3 scripts/check_doc_examples.py
+8080
+enabled = true
+port = 8080
+5 README examples passed
++ crystal build --release --no-debug --threads 1 --error-on-warnings scripts/toml_test_decoder.cr -o /tmp/tmp.6g9fMYq3W6/decoder
++ crystal build --release --no-debug --threads 1 --error-on-warnings scripts/toml_test_encoder.cr -o /tmp/tmp.6g9fMYq3W6/encoder
++ sha256sum /tmp/tmp.6g9fMYq3W6/decoder /tmp/tmp.6g9fMYq3W6/encoder
+d686a114fbc04be8837fa01809b77e9c4d02005a2da1465456dca05e57a53f4b  /tmp/tmp.6g9fMYq3W6/decoder
+9659b167742c18b552da1a21628025ce2d2ab708c48e9b7547aace42bf6ac56e  /tmp/tmp.6g9fMYq3W6/encoder
++ /tmp/fused-toml-bench.dSCxcnP6/toml-test test -toml 1.1 -parallel 1 -color never -decoder /tmp/tmp.6g9fMYq3W6/decoder -encoder /tmp/tmp.6g9fMYq3W6/encoder
+toml-test v2.2.0 [/tmp/tmp.6g9fMYq3W6/decoder] [/tmp/tmp.6g9fMYq3W6/encoder]
+  valid tests: 214 passed,  0 failed
+encoder tests: 214 passed,  0 failed
+invalid tests: 467 passed,  0 failed
++ /tmp/fused-toml-bench.dSCxcnP6/toml-test test -toml 1.1 -parallel 1 -color never -decoder /tmp/tmp.6g9fMYq3W6/decoder --io
+toml-test v2.2.0 [/tmp/tmp.6g9fMYq3W6/decoder --io] [no encoder]
+  valid tests: 214 passed,  0 failed
+encoder tests: no encoder command given
+invalid tests: 467 passed,  0 failed
++ rm -rf -- /tmp/tmp.6g9fMYq3W6

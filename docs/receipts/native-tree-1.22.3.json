@@ -1,0 +1,871 @@
+{
+  "fused": "dd17a55bf611cd1241fe7fd3742610cfdefaa82b",
+  "aloli": "3cd645c67b83ce5b055bb0ae041d68fc354c7281",
+  "compiler": "Crystal 1.22.3 [3462c0774] (2026-11-13)\n\nLLVM: 22.1.3\nDefault target: x86_64-unknown-linux-gnu",
+  "platform": "Linux-7.2.15-76070215-generic-x86_64-with-glibc2.35",
+  "build_flags": [
+    "--release",
+    "--no-debug",
+    "--threads",
+    "1"
+  ],
+  "gc_markers": 1,
+  "gc_nprocs": 1,
+  "binary_sha256": "90952792ce137d040c2a1409716da963836cdbf3cafa5eb138abe3e3fe07c43f",
+  "fixtures": {
+    "manifest.toml": {
+      "size": 294,
+      "sha256": "17cd2e006088b86f538172f1ce7527dfb41daac810c618a082bc1ae1988dff32",
+      "root_entries": 3
+    },
+    "routes.toml": {
+      "size": 300,
+      "sha256": "82572fcdd6f0c4643d8d6a6197db07218919cee03e82df1b10b9b7dfcd937924",
+      "root_entries": 3
+    },
+    "server.toml": {
+      "size": 169,
+      "sha256": "e45024f504a85fdae165d9988ec896985439da95beda97cd7f901e42aab85d24",
+      "root_entries": 6
+    },
+    "lock.toml": {
+      "size": 318461,
+      "sha256": "92caf513a6ea0caa8c8e4a8de13d1fa64b98fbfb6e96705956e689af5d8c4819",
+      "root_entries": 2
+    }
+  },
+  "cpu": {
+    "logical_cpu": 2,
+    "siblings": "2-3",
+    "governor": "powersave",
+    "model": "12th Gen Intel(R) Core(TM) i9-12900HK"
+  },
+  "pairs": 6,
+  "warmup_seconds": 1,
+  "measurement_seconds": 2,
+  "started_utc": "2026-11-19T04:56:51Z",
+  "samples": [
+    {
+      "pair": 1,
+      "fixture": "manifest.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.2900390625,
+        0.080078125,
+        0.021484375
+      ],
+      "latency_us": 5.013963074161042,
+      "mib_per_second": 55.91988709856064,
+      "managed_bytes_op": 5648,
+      "batches": 21,
+      "rsd_percent": 0.9896102250728536,
+      "root_entries": 3
+    },
+    {
+      "pair": 1,
+      "fixture": "manifest.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.34716796875,
+        0.095703125,
+        0.02685546875
+      ],
+      "latency_us": 28.738739559280052,
+      "mib_per_second": 9.75617766551977,
+      "managed_bytes_op": 37904,
+      "batches": 23,
+      "rsd_percent": 2.989692610577548,
+      "root_entries": 3
+    },
+    {
+      "pair": 1,
+      "fixture": "routes.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.34716796875,
+        0.095703125,
+        0.02685546875
+      ],
+      "latency_us": 5.30884908148709,
+      "mib_per_second": 53.89158563944963,
+      "managed_bytes_op": 5824,
+      "batches": 23,
+      "rsd_percent": 0.5309276128232153,
+      "root_entries": 3
+    },
+    {
+      "pair": 1,
+      "fixture": "routes.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.39990234375,
+        0.11083984375,
+        0.0322265625
+      ],
+      "latency_us": 33.53998896306573,
+      "mib_per_second": 8.530184527995258,
+      "managed_bytes_op": 40048,
+      "batches": 21,
+      "rsd_percent": 3.3406277737823515,
+      "root_entries": 3
+    },
+    {
+      "pair": 1,
+      "fixture": "server.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.4482421875,
+        0.1259765625,
+        0.03759765625
+      ],
+      "latency_us": 4.507256205684584,
+      "mib_per_second": 35.75810917280147,
+      "managed_bytes_op": 4880,
+      "batches": 21,
+      "rsd_percent": 0.28535084467299937,
+      "root_entries": 6
+    },
+    {
+      "pair": 1,
+      "fixture": "server.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.4482421875,
+        0.1259765625,
+        0.03759765625
+      ],
+      "latency_us": 22.389070482718466,
+      "mib_per_second": 7.198644517067373,
+      "managed_bytes_op": 30400,
+      "batches": 22,
+      "rsd_percent": 0.13484073907548189,
+      "root_entries": 6
+    },
+    {
+      "pair": 1,
+      "fixture": "lock.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.49267578125,
+        0.140625,
+        0.04296875
+      ],
+      "latency_us": 4210.863876073886,
+      "mib_per_second": 72.12488587026502,
+      "managed_bytes_op": 4353097,
+      "batches": 19,
+      "rsd_percent": 2.3132144077427257,
+      "root_entries": 2
+    },
+    {
+      "pair": 1,
+      "fixture": "lock.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.53369140625,
+        0.1552734375,
+        0.04833984375
+      ],
+      "latency_us": 29020.13032476343,
+      "mib_per_second": 10.465427724764243,
+      "managed_bytes_op": 31588465,
+      "batches": 18,
+      "rsd_percent": 1.2449837142376756,
+      "root_entries": 2
+    },
+    {
+      "pair": 2,
+      "fixture": "manifest.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.53369140625,
+        0.1552734375,
+        0.04833984375
+      ],
+      "latency_us": 28.984859296531855,
+      "mib_per_second": 9.673334831643846,
+      "managed_bytes_op": 37904,
+      "batches": 23,
+      "rsd_percent": 4.185750517666314,
+      "root_entries": 3
+    },
+    {
+      "pair": 2,
+      "fixture": "manifest.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.5712890625,
+        0.16943359375,
+        0.0537109375
+      ],
+      "latency_us": 5.039115589025926,
+      "mib_per_second": 55.640765541088875,
+      "managed_bytes_op": 5648,
+      "batches": 20,
+      "rsd_percent": 1.095906579940187,
+      "root_entries": 3
+    },
+    {
+      "pair": 2,
+      "fixture": "routes.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.5712890625,
+        0.16943359375,
+        0.0537109375
+      ],
+      "latency_us": 32.15605090895962,
+      "mib_per_second": 8.897308184138945,
+      "managed_bytes_op": 40048,
+      "batches": 23,
+      "rsd_percent": 4.978404277203176,
+      "root_entries": 3
+    },
+    {
+      "pair": 2,
+      "fixture": "routes.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.60595703125,
+        0.18359375,
+        0.05908203125
+      ],
+      "latency_us": 5.7504286899213515,
+      "mib_per_second": 49.75321151679007,
+      "managed_bytes_op": 5824,
+      "batches": 21,
+      "rsd_percent": 0.263862897018156,
+      "root_entries": 3
+    },
+    {
+      "pair": 2,
+      "fixture": "server.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.6376953125,
+        0.197265625,
+        0.064453125
+      ],
+      "latency_us": 22.990842074645453,
+      "mib_per_second": 7.010224286234271,
+      "managed_bytes_op": 30400,
+      "batches": 22,
+      "rsd_percent": 3.9299892596523383,
+      "root_entries": 6
+    },
+    {
+      "pair": 2,
+      "fixture": "server.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.6376953125,
+        0.197265625,
+        0.064453125
+      ],
+      "latency_us": 4.631630988498086,
+      "mib_per_second": 34.79788434633469,
+      "managed_bytes_op": 4880,
+      "batches": 21,
+      "rsd_percent": 0.23443796755876276,
+      "root_entries": 6
+    },
+    {
+      "pair": 2,
+      "fixture": "lock.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.6669921875,
+        0.2109375,
+        0.06982421875
+      ],
+      "latency_us": 29151.51631666983,
+      "mib_per_second": 10.418260003284294,
+      "managed_bytes_op": 31588473,
+      "batches": 23,
+      "rsd_percent": 0.7056479779922491,
+      "root_entries": 2
+    },
+    {
+      "pair": 2,
+      "fixture": "lock.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.6669921875,
+        0.2109375,
+        0.06982421875
+      ],
+      "latency_us": 4154.539400439435,
+      "mib_per_second": 73.10270699200179,
+      "managed_bytes_op": 4353102,
+      "batches": 19,
+      "rsd_percent": 0.38018854434376426,
+      "root_entries": 2
+    },
+    {
+      "pair": 3,
+      "fixture": "manifest.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.69384765625,
+        0.22412109375,
+        0.0751953125
+      ],
+      "latency_us": 5.138926066209058,
+      "mib_per_second": 54.56008617580124,
+      "managed_bytes_op": 5648,
+      "batches": 20,
+      "rsd_percent": 0.5158987029313066,
+      "root_entries": 3
+    },
+    {
+      "pair": 3,
+      "fixture": "manifest.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.71875,
+        0.2373046875,
+        0.08056640625
+      ],
+      "latency_us": 29.16968592012624,
+      "mib_per_second": 9.612042097099962,
+      "managed_bytes_op": 37904,
+      "batches": 22,
+      "rsd_percent": 5.09959575503545,
+      "root_entries": 3
+    },
+    {
+      "pair": 3,
+      "fixture": "routes.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.71875,
+        0.2373046875,
+        0.08056640625
+      ],
+      "latency_us": 5.596010708056947,
+      "mib_per_second": 51.126116415387585,
+      "managed_bytes_op": 5824,
+      "batches": 21,
+      "rsd_percent": 0.8595932699413158,
+      "root_entries": 3
+    },
+    {
+      "pair": 3,
+      "fixture": "routes.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.74169921875,
+        0.25,
+        0.0859375
+      ],
+      "latency_us": 31.203920363386693,
+      "mib_per_second": 9.168793266681158,
+      "managed_bytes_op": 40048,
+      "batches": 22,
+      "rsd_percent": 0.6606446607812214,
+      "root_entries": 3
+    },
+    {
+      "pair": 3,
+      "fixture": "server.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.74169921875,
+        0.25,
+        0.0859375
+      ],
+      "latency_us": 4.461115743244659,
+      "mib_per_second": 36.127948421134974,
+      "managed_bytes_op": 4880,
+      "batches": 21,
+      "rsd_percent": 0.355305023417717,
+      "root_entries": 6
+    },
+    {
+      "pair": 3,
+      "fixture": "server.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.7626953125,
+        0.2626953125,
+        0.09130859375
+      ],
+      "latency_us": 22.7494886733726,
+      "mib_per_second": 7.084597011681438,
+      "managed_bytes_op": 30400,
+      "batches": 22,
+      "rsd_percent": 3.5471821380419177,
+      "root_entries": 6
+    },
+    {
+      "pair": 3,
+      "fixture": "lock.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.78173828125,
+        0.275390625,
+        0.09619140625
+      ],
+      "latency_us": 4178.466133155115,
+      "mib_per_second": 72.68410627220378,
+      "managed_bytes_op": 4353107,
+      "batches": 19,
+      "rsd_percent": 2.49308781082897,
+      "root_entries": 2
+    },
+    {
+      "pair": 3,
+      "fixture": "lock.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.78173828125,
+        0.275390625,
+        0.09619140625
+      ],
+      "latency_us": 29793.506057072475,
+      "mib_per_second": 10.193767591342464,
+      "managed_bytes_op": 31588553,
+      "batches": 23,
+      "rsd_percent": 3.763059517479708,
+      "root_entries": 2
+    },
+    {
+      "pair": 4,
+      "fixture": "manifest.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.79931640625,
+        0.28759765625,
+        0.10107421875
+      ],
+      "latency_us": 28.899286250012242,
+      "mib_per_second": 9.701978332538186,
+      "managed_bytes_op": 37904,
+      "batches": 22,
+      "rsd_percent": 4.149117514847792,
+      "root_entries": 3
+    },
+    {
+      "pair": 4,
+      "fixture": "manifest.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.8154296875,
+        0.2998046875,
+        0.10595703125
+      ],
+      "latency_us": 5.005372094220737,
+      "mib_per_second": 56.01586530343426,
+      "managed_bytes_op": 5648,
+      "batches": 21,
+      "rsd_percent": 0.6404797641337329,
+      "root_entries": 3
+    },
+    {
+      "pair": 4,
+      "fixture": "routes.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.8154296875,
+        0.2998046875,
+        0.10595703125
+      ],
+      "latency_us": 32.259042024026776,
+      "mib_per_second": 8.868902390492062,
+      "managed_bytes_op": 40048,
+      "batches": 22,
+      "rsd_percent": 2.524470718711195,
+      "root_entries": 3
+    },
+    {
+      "pair": 4,
+      "fixture": "routes.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.83056640625,
+        0.3115234375,
+        0.11083984375
+      ],
+      "latency_us": 5.578477849682504,
+      "mib_per_second": 51.28680307266226,
+      "managed_bytes_op": 5824,
+      "batches": 21,
+      "rsd_percent": 0.5590385440231386,
+      "root_entries": 3
+    },
+    {
+      "pair": 4,
+      "fixture": "server.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.83056640625,
+        0.3115234375,
+        0.11083984375
+      ],
+      "latency_us": 24.42432540442614,
+      "mib_per_second": 6.598788576713324,
+      "managed_bytes_op": 30400,
+      "batches": 20,
+      "rsd_percent": 2.584456043520643,
+      "root_entries": 6
+    },
+    {
+      "pair": 4,
+      "fixture": "server.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.84423828125,
+        0.3232421875,
+        0.11572265625
+      ],
+      "latency_us": 4.485498126113836,
+      "mib_per_second": 35.93156321576534,
+      "managed_bytes_op": 4880,
+      "batches": 21,
+      "rsd_percent": 0.19609238843492646,
+      "root_entries": 6
+    },
+    {
+      "pair": 4,
+      "fixture": "lock.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.85693359375,
+        0.3349609375,
+        0.12060546875
+      ],
+      "latency_us": 29109.250986199753,
+      "mib_per_second": 10.433386850834262,
+      "managed_bytes_op": 31588561,
+      "batches": 23,
+      "rsd_percent": 3.679093413855661,
+      "root_entries": 2
+    },
+    {
+      "pair": 4,
+      "fixture": "lock.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.85693359375,
+        0.3349609375,
+        0.12060546875
+      ],
+      "latency_us": 4228.671302414105,
+      "mib_per_second": 71.82115959300667,
+      "managed_bytes_op": 4353100,
+      "batches": 19,
+      "rsd_percent": 2.6431240292382063,
+      "root_entries": 2
+    },
+    {
+      "pair": 5,
+      "fixture": "manifest.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.86865234375,
+        0.34619140625,
+        0.12548828125
+      ],
+      "latency_us": 4.951022288033062,
+      "mib_per_second": 56.630779001163965,
+      "managed_bytes_op": 5648,
+      "batches": 21,
+      "rsd_percent": 0.511598855117682,
+      "root_entries": 3
+    },
+    {
+      "pair": 5,
+      "fixture": "manifest.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.86865234375,
+        0.34619140625,
+        0.12548828125
+      ],
+      "latency_us": 29.211528247427406,
+      "mib_per_second": 9.59827389544845,
+      "managed_bytes_op": 37904,
+      "batches": 22,
+      "rsd_percent": 5.295595759303062,
+      "root_entries": 3
+    },
+    {
+      "pair": 5,
+      "fixture": "routes.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.87939453125,
+        0.357421875,
+        0.13037109375
+      ],
+      "latency_us": 5.570481288615327,
+      "mib_per_second": 51.360426523036104,
+      "managed_bytes_op": 5824,
+      "batches": 21,
+      "rsd_percent": 0.48077961723190127,
+      "root_entries": 3
+    },
+    {
+      "pair": 5,
+      "fixture": "routes.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.88916015625,
+        0.3681640625,
+        0.13525390625
+      ],
+      "latency_us": 31.817197261225548,
+      "mib_per_second": 8.99206465525288,
+      "managed_bytes_op": 40048,
+      "batches": 22,
+      "rsd_percent": 2.1095480434301077,
+      "root_entries": 3
+    },
+    {
+      "pair": 5,
+      "fixture": "server.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.88916015625,
+        0.3681640625,
+        0.13525390625
+      ],
+      "latency_us": 4.484245693912765,
+      "mib_per_second": 35.94159876017525,
+      "managed_bytes_op": 4880,
+      "batches": 21,
+      "rsd_percent": 0.3882868415691516,
+      "root_entries": 6
+    },
+    {
+      "pair": 5,
+      "fixture": "server.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.8984375,
+        0.37890625,
+        0.14013671875
+      ],
+      "latency_us": 23.208783086014627,
+      "mib_per_second": 6.944395097120633,
+      "managed_bytes_op": 30400,
+      "batches": 21,
+      "rsd_percent": 5.579505190409866,
+      "root_entries": 6
+    },
+    {
+      "pair": 5,
+      "fixture": "lock.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.8984375,
+        0.37890625,
+        0.14013671875
+      ],
+      "latency_us": 4085.6536916566083,
+      "mib_per_second": 74.33524703703078,
+      "managed_bytes_op": 4353107,
+      "batches": 20,
+      "rsd_percent": 3.9477126555395268,
+      "root_entries": 2
+    },
+    {
+      "pair": 5,
+      "fixture": "lock.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.90673828125,
+        0.3896484375,
+        0.14501953125
+      ],
+      "latency_us": 29414.033820895365,
+      "mib_per_second": 10.325278005946275,
+      "managed_bytes_op": 31588536,
+      "batches": 23,
+      "rsd_percent": 1.3325478916182885,
+      "root_entries": 2
+    },
+    {
+      "pair": 6,
+      "fixture": "manifest.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.91455078125,
+        0.39990234375,
+        0.14990234375
+      ],
+      "latency_us": 28.635234474929682,
+      "mib_per_second": 9.791442401804396,
+      "managed_bytes_op": 37904,
+      "batches": 22,
+      "rsd_percent": 4.338793343177232,
+      "root_entries": 3
+    },
+    {
+      "pair": 6,
+      "fixture": "manifest.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.91455078125,
+        0.39990234375,
+        0.14990234375
+      ],
+      "latency_us": 5.173933636191752,
+      "mib_per_second": 54.19092488202265,
+      "managed_bytes_op": 5648,
+      "batches": 20,
+      "rsd_percent": 0.702563440417176,
+      "root_entries": 3
+    },
+    {
+      "pair": 6,
+      "fixture": "routes.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.921875,
+        0.41015625,
+        0.15478515625
+      ],
+      "latency_us": 31.834696250699846,
+      "mib_per_second": 8.987121870703742,
+      "managed_bytes_op": 40048,
+      "batches": 22,
+      "rsd_percent": 2.6041476079939545,
+      "root_entries": 3
+    },
+    {
+      "pair": 6,
+      "fixture": "routes.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.92822265625,
+        0.42041015625,
+        0.15966796875
+      ],
+      "latency_us": 5.80397590523188,
+      "mib_per_second": 49.29419067091124,
+      "managed_bytes_op": 5824,
+      "batches": 21,
+      "rsd_percent": 1.1424742797004734,
+      "root_entries": 3
+    },
+    {
+      "pair": 6,
+      "fixture": "server.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.92822265625,
+        0.42041015625,
+        0.15966796875
+      ],
+      "latency_us": 22.8611411468655,
+      "mib_per_second": 7.0499962550974615,
+      "managed_bytes_op": 30400,
+      "batches": 22,
+      "rsd_percent": 0.6637807801879286,
+      "root_entries": 6
+    },
+    {
+      "pair": 6,
+      "fixture": "server.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.93408203125,
+        0.43017578125,
+        0.16455078125
+      ],
+      "latency_us": 4.648003751822875,
+      "mib_per_second": 34.675307525181644,
+      "managed_bytes_op": 4880,
+      "batches": 21,
+      "rsd_percent": 0.27370114004797175,
+      "root_entries": 6
+    },
+    {
+      "pair": 6,
+      "fixture": "lock.toml",
+      "parser": "aloli",
+      "loadavg": [
+        0.93408203125,
+        0.43017578125,
+        0.16455078125
+      ],
+      "latency_us": 29747.106827990858,
+      "mib_per_second": 10.209667724434748,
+      "managed_bytes_op": 31588453,
+      "batches": 23,
+      "rsd_percent": 4.360063201418265,
+      "root_entries": 2
+    },
+    {
+      "pair": 6,
+      "fixture": "lock.toml",
+      "parser": "fused",
+      "loadavg": [
+        0.939453125,
+        0.43994140625,
+        0.16943359375
+      ],
+      "latency_us": 4190.440438695556,
+      "mib_per_second": 72.47640932264204,
+      "managed_bytes_op": 4353105,
+      "batches": 20,
+      "rsd_percent": 4.128121322868532,
+      "root_entries": 2
+    }
+  ],
+  "summary": {
+    "manifest.toml": {
+      "aloli": {
+        "latency_us": 28.94207277327205,
+        "mib_per_second": 9.687656582091016,
+        "managed_bytes_op": 37904.0
+      },
+      "fused": {
+        "latency_us": 5.026539331593484,
+        "mib_per_second": 55.78032631982476,
+        "managed_bytes_op": 5648.0
+      },
+      "paired_speedup": 5.741857429480541
+    },
+    "routes.toml": {
+      "aloli": {
+        "latency_us": 31.99537357982973,
+        "mib_per_second": 8.942215027421344,
+        "managed_bytes_op": 40048.0
+      },
+      "fused": {
+        "latency_us": 5.587244278869726,
+        "mib_per_second": 51.206459744024926,
+        "managed_bytes_op": 5824.0
+      },
+      "paired_speedup": 5.651844955325085
+    },
+    "server.toml": {
+      "aloli": {
+        "latency_us": 22.925991610755474,
+        "mib_per_second": 7.030110270665866,
+        "managed_bytes_op": 30400.0
+      },
+      "fused": {
+        "latency_us": 4.49637716589921,
+        "mib_per_second": 35.8448361942834,
+        "managed_bytes_op": 4880.0
+      },
+      "paired_speedup": 5.033422848961381
+    },
+    "lock.toml": {
+      "aloli": {
+        "latency_us": 29282.775068782597,
+        "mib_per_second": 10.371769004615285,
+        "managed_bytes_op": 31588504.5
+      },
+      "fused": {
+        "latency_us": 4184.453285925336,
+        "mib_per_second": 72.58025779742292,
+        "managed_bytes_op": 4353103.5
+      },
+      "paired_speedup": 7.057794274074633
+    }
+  }
+}
