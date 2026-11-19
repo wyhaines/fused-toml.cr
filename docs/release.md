@@ -1,5 +1,19 @@
 # Release verification
 
+## 1.0.0 release notes
+
+FusedTOML 1.0.0 reads and writes TOML 1.1 in native Crystal. It supports Crystal 1.21.0 and later 1.x releases.
+
+- Read a String or IO into a table with `FusedTOML.load`. Use `FusedTOML.dump` to write deterministic TOML to a String or IO.
+- Include `FusedTOML::Serializable` in a class or struct to load it with `FusedTOML.load(source, Model)` and write it with `model.to_toml`. Models support nested types, field renaming, custom converters, and optional rejection of unknown keys.
+- Set limits on document size, token size, token count, or nesting depth. Parse errors identify the line, column, and byte offset. Typed mapping errors identify the field or array element.
+
+The reader buffers the full document when reading from IO and discards formatting and comments when parsing. The reader and writer accept seconds 00 through 59.
+
+On Crystal 1.21.0 and 1.22.3, all 58 specs passed with the default eight-byte scanner and again with the scalar fallback. Both compilers passed the five README examples and nine typed-writer compatibility checks. On each compiler the TOML 1.1 encoder passed all 214 cases. The String and IO decoders each accepted all 214 valid inputs and rejected all 467 invalid inputs.
+
+## Running the release checks
+
 Put the Crystal compiler you want to test on PATH, then run these commands from the repository root.
 
 ```sh
@@ -41,7 +55,7 @@ During release testing, the reader mistook long float literals such as `1.0e-000
 ## Supported values and limitations
 
 - TOML integers must fit in Int64. The dynamic reader uses IEEE 754 binary64 for floats and raises a parse error for finite literals outside that range. The writer preserves negative zero and uses one spelling for NaN.
-- FusedTOML uses distinct Crystal types for dates, local times, local date-times and offset date-times. The reader truncates fractional seconds to nanoseconds. The 0.1 series accepts seconds 00 through 59. RFC 3339 permits second 60 at an actual leap-second insertion. The reader and writer both reject those timestamps. Supporting it would require rules for validating both local times and times with an offset. [TOML 1.1 time grammar](https://github.com/toml-lang/toml/blob/1.1.0/toml.abnf) · [RFC 3339 §5.7](https://www.rfc-editor.org/rfc/rfc3339#section-5.7)
+- FusedTOML uses distinct Crystal types for dates, local times, local date-times and offset date-times. The reader truncates fractional seconds to nanoseconds. RFC 3339 permits second 60 at an actual leap-second insertion. FusedTOML accepts seconds 00 through 59. Supporting leap seconds would require rules for validating both local times and times with an offset. [TOML 1.1 time grammar](https://github.com/toml-lang/toml/blob/1.1.0/toml.abnf) · [RFC 3339 §5.7](https://www.rfc-editor.org/rfc/rfc3339#section-5.7)
 - The reader buffers the entire document when loading from IO. Set `max_document_bytes` to bound reads. Typed loading maps the resolved root table to the requested Crystal model. The reader discards source layout and comments. The writer produces deterministic TOML from the table.
 
 For runnable API examples, see the [README](../README.md). For the separate comparison of native TOML trees, see the [benchmark protocol](benchmarking.md).

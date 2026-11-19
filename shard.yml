@@ -1,5 +1,5 @@
 name: fused_toml
-version: 0.1.0-dev
+version: 1.0.0
 authors:
   - Kirk Haines <wyhaines@gmail.com>
 description: A native Crystal TOML reader and writer

@@ -20,13 +20,11 @@ Each milestone after the String reader must preserve the earlier public contract
 
 ## Implementation status
 
-All five milestones are complete for the local development release. The dynamic and typed loaders both accept a String or borrowed IO. For buffering, EOF, resource limits and error locations, see the [IO and limits guide](../README.md#reading-from-io-with-limits). The [typed configuration guide](../README.md#loading-typed-configurations) covers field mapping.
+All five milestones are complete for 1.0.0. The dynamic and typed loaders both accept a String or borrowed IO. For buffering, EOF, resource limits and error locations, see the [IO and limits guide](../README.md#reading-from-io-with-limits). The [typed configuration guide](../README.md#loading-typed-configurations) covers field mapping.
 
 Release checks run the project specs, README examples, typed-writer compatibility checks, and TOML 1.1 suites for both decoders (String and IO) and the encoder. For compiler versions, build commands, conformance logs and supported temporal precision, see the [release verification report](release.md).
 
 The benchmark compares equivalent native values on three small configurations and a generated lockfile. For all 48 observations, fixture hashes and commands for repeating the run on an idle host, see the [benchmark report](benchmarking.md).
-
-The shard is at `0.1.0-dev` pending a decision on publication.
 
 ## Typed writing
 

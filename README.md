@@ -1,6 +1,6 @@
 # fused-toml.cr
 
-FusedTOML reads and writes TOML 1.1 in native Crystal. Load a document from a String or IO to get its root table. The reader resolves dotted keys and arrays of tables into Crystal hashes and arrays.
+FusedTOML reads and writes TOML 1.1 in native Crystal. Load a document from a String or IO to get its root table. The reader resolves dotted keys and arrays of tables into Crystal hashes and arrays. For typed configurations, include `FusedTOML::Serializable` in a class or struct to read and write its fields.
 
 FusedTOML parsed a 2,048-package lockfile in **2.84 ms** on a Core i9-12900HK. Among seven parsers across Crystal, Ruby, Python, and Rust, it had the lowest median parse time on each of the four inputs. [Benchmark results and methodology](docs/cross-language-benchmark.md)
 
@@ -12,13 +12,18 @@ port = config["server"].as(FusedTOML::Table)["port"].as(Int64)
 port # => 8080
 ```
 
-To use a local checkout from another shard, add a path dependency.
+## Installation
+
+FusedTOML requires Crystal 1.21.0 or later in the 1.x series. Add the shard to your project's `shard.yml` and run `shards install`.
 
 ```yaml
 dependencies:
   fused_toml:
-    path: ../fused-toml.cr
+    github: wyhaines/fused-toml.cr
+    version: ~> 1.0
 ```
+
+For a local checkout, use `path: ../fused-toml.cr` in place of the `github` and `version` entries.
 
 ## Reader contract
 
@@ -160,7 +165,7 @@ crystal build scripts/toml_test_encoder.cr -o bin/toml-test-encoder
 "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder "./bin/toml-test-decoder --io"
 ```
 
-See the [original Aloli benchmark](docs/benchmarking.md), [release checks and limitations](docs/release.md), and [implementation plan](docs/plan.md).
+See the [original Aloli benchmark](docs/benchmarking.md), [release notes, checks and limitations](docs/release.md), and [implementation plan](docs/plan.md).
 
 ## License and provenance
 
