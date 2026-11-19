@@ -46,3 +46,50 @@ For each process the results file gives the time per document in microseconds (t
 The table reports medians for each parser and fixture. To calculate speedup, divide Aloli's latency by FusedTOML's within each pair, then take the median of the six ratios. Managed bytes count GC allocation traffic.
 
 These timings cover dynamic loading from a String. Typed loading, IO, writing, source-preserving edits, and peak process memory each need a separate workload. Profile the workload you want to improve before changing a hot path.
+
+## AVX2 string-scanner experiment
+
+FusedTOML keeps the eight-byte scanner as its default because AVX2 gave no consistent improvement on the three small configurations or the lockfile. On the Dell XPS 15 9520 (Core i9-12900HK), the AVX2 prototype cut whole-document parse time by 16% for long basic strings and 14% for long UTF-8 literal strings. All eight pairs favored AVX2 on both long-string inputs. [Benchmark prototype](../bench/avx2/scanner.cr) · [Raw measurements](receipts/dell-avx2-prefix8.json)
+
+| Document | Eight-byte scanner | AVX2 | Paired change in parse time |
+| --- | ---: | ---: | ---: |
+| Server | 3.81 µs | 3.87 µs | +0.3% |
+| Manifest | 4.19 µs | 4.23 µs | +1.0% |
+| Routes | 4.65 µs | 4.60 µs | +0.5% |
+| Lockfile | 2.90 ms | 3.04 ms | +3.1% |
+| Long basic strings | 612 µs | 513 µs | −16.0% |
+| Long UTF-8 literal strings | 605 µs | 515 µs | −14.0% |
+| Escape-heavy basic strings | 199 µs | 197 µs | −0.9% |
+
+Both binaries used the parser from `1350d91` and the same `FusedTOML.load` worker. The candidate first scans eight bytes with the existing code. If they contain no special byte, it checks 32 bytes at a time for the quote, ASCII controls and, in basic strings, backslashes. The existing scanner finds the exact position within a matching block and handles partial blocks. Crystal 1.22.3 and LLVM 22.1.3 generated the AVX2 byte comparisons from a Crystal loop.
+
+Each long-string document has 128 keys with 4,096-byte values. One uses ASCII in double quotes, the other repeats `雪a` in single quotes. The escape-heavy document has 128 keys with 32 newline escapes apiece. Both workers returned the same complete tree for every document.
+
+A separate build counted how often the scanner could skip a full 32-byte block. With the eight-byte prefix it skipped zero blocks on the small configurations and the escape-heavy input. On the lockfile it entered the vector loop 6,142 times and skipped 2,048 blocks, one per checksum. On each long-string document, 128 calls skipped 16,256 blocks.
+
+The columns report median times across eight fresh processes per worker and fixture. Each pair ran on CPU 2 with at least half a second of warmup and one second of timed parsing per process. Run order alternated. The last column gives the median of the changes **within** each pair, so it can differ from the change between the two column medians. On the lockfile those paired changes ranged from 9.5% faster to 14.6% slower. All 112 samples passed the Dell benchmark's AC power, CPU and disk checks.
+
+A second run waited for 128 ordinary bytes before switching to AVX2. Parse time fell 18.1% on long basic strings and 15.1% on long UTF-8 literal strings. On the lockfile the median change was +0.4%, with each scanner winning four pairs. The longest strings in that fixture are 64-byte checksums. Both prototypes passed all 58 project specs and the TOML 1.1 decoder suite on String and IO. [Follow-up measurements](receipts/dell-avx2-prefix128.json)
+
+### Repeat the scanner comparison
+
+From the repository root on a quiet AVX2 Linux host, choose an available core with an SMT sibling. The runner uses the same AC power and NVMe checks as the Dell cross-language benchmark.
+
+```sh
+work=$(mktemp -d)
+export CRYSTAL_PATH="$PWD/src:$(crystal env CRYSTAL_PATH)"
+crystal run --release bench/avx2/check.cr
+crystal build --release --no-debug --threads 1 bench/cross_language/worker.cr -o "$work/baseline"
+crystal build --release --no-debug --threads 1 --emit asm bench/avx2/worker.cr -o "$work/candidate"
+python3 -B bench/avx2/compare.py --work "$work" --cpu 2
+```
+
+For the 128-byte prefix, reuse the baseline binary and run a fresh comparison.
+
+```sh
+long=$(mktemp -d)
+cp "$work/baseline" "$long/baseline"
+crystal run --release -Dbench_avx2_long_prefix bench/avx2/check.cr
+crystal build --release --no-debug --threads 1 --emit asm -Dbench_avx2_long_prefix bench/avx2/worker.cr -o "$long/candidate"
+python3 -B bench/avx2/compare.py --work "$long" --cpu 2 --fixtures lock long-basic long-literal
+```
