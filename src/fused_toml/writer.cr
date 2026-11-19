@@ -1,6 +1,47 @@
 module FusedTOML
   # Raised when a Crystal value cannot be represented in the output document.
   class EncodeError < Exception
+    getter path : String?
+
+    def initialize(message : String? = nil, cause : Exception? = nil, *, @path : String? = nil)
+      super(path ? "#{path}: #{message}" : message, cause)
+    end
+  end
+
+  private module EncodingChecks
+    def self.validate(string : String)
+      raise EncodeError.new("invalid UTF-8 string") unless string.valid_encoding?
+    end
+
+    def self.validate(date : LocalDate)
+      unless (0..9999).includes?(date.year) && (1..12).includes?(date.month) &&
+             (1..Time.days_in_month(date.year, date.month)).includes?(date.day)
+        raise EncodeError.new("invalid calendar date")
+      end
+    end
+
+    def self.validate(time : LocalTime)
+      unless (0..23).includes?(time.hour) && (0..59).includes?(time.minute) &&
+             (0..59).includes?(time.second) && (0..999_999_999).includes?(time.nanosecond)
+        raise EncodeError.new("invalid local time")
+      end
+    end
+
+    def self.validate(value : LocalDateTime)
+      validate(value.date)
+      validate(value.time)
+    end
+
+    def self.validate(value : OffsetDateTime)
+      validate(value.local)
+      check_offset(value.offset)
+    end
+
+    def self.check_offset(offset)
+      unless offset.valid_encoding? && /\A(?:[Zz]|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])\z/.matches?(offset)
+        raise EncodeError.new("invalid UTC offset")
+      end
+    end
   end
 
   private class Writer
@@ -96,9 +137,7 @@ module FusedTOML
         write_date_time(value)
       when OffsetDateTime
         offset = value.offset == "z" ? "Z" : value.offset
-        unless offset.valid_encoding? && /\A(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])\z/.matches?(offset)
-          raise EncodeError.new("invalid UTC offset")
-        end
+        EncodingChecks.check_offset(offset)
         write_date_time(value.local)
         @io << offset
       end
@@ -117,7 +156,7 @@ module FusedTOML
     end
 
     private def write_string(string)
-      raise EncodeError.new("invalid UTF-8 string") unless string.valid_encoding?
+      EncodingChecks.validate(string)
       @io << '"'
       start = 0
       string.to_slice.each_with_index do |byte, index|
@@ -147,18 +186,12 @@ module FusedTOML
     end
 
     private def write_date(date)
-      unless (0..9999).includes?(date.year) && (1..12).includes?(date.month) &&
-             (1..Time.days_in_month(date.year, date.month)).includes?(date.day)
-        raise EncodeError.new("invalid calendar date")
-      end
+      EncodingChecks.validate(date)
       @io.printf("%04d-%02d-%02d", date.year, date.month, date.day)
     end
 
     private def write_time(time)
-      unless (0..23).includes?(time.hour) && (0..59).includes?(time.minute) &&
-             (0..59).includes?(time.second) && (0..999_999_999).includes?(time.nanosecond)
-        raise EncodeError.new("invalid local time")
-      end
+      EncodingChecks.validate(time)
       @io.printf("%02d:%02d:%02d", time.hour, time.minute, time.second)
       unless time.nanosecond.zero?
         @io << (".%09d" % time.nanosecond).rstrip('0')

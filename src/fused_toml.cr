@@ -5,7 +5,9 @@ require "./fused_toml/input"
 require "./fused_toml/parser"
 require "./fused_toml/writer"
 require "./fused_toml/serializable"
+require "./fused_toml/mapping_path"
 require "./fused_toml/decoder"
+require "./fused_toml/encoder"
 
 module FusedTOML
   # Reads a complete TOML 1.1 document into a root table.
@@ -27,6 +29,18 @@ module FusedTOML
   # Writes the document to a borrowed IO. An error can leave a prefix written.
   def self.dump(table : Table, io : IO, *, max_depth : Int32 = 128) : Nil
     check_max_depth(max_depth)
+    Writer.new(io, max_depth).write(table)
+  end
+
+  # Encodes the mapped fields of a model or typed string-keyed hash.
+  def self.dump(model : Serializable | Hash, *, max_depth : Int32 = 128) : String
+    String.build { |io| dump(model, io, max_depth: max_depth) }
+  end
+
+  # Maps the complete model before writing the document to a borrowed IO.
+  def self.dump(model : Serializable | Hash, io : IO, *, max_depth : Int32 = 128) : Nil
+    check_max_depth(max_depth)
+    table = Encoder.new(max_depth).encode(model, 0, true).as(Table)
     Writer.new(io, max_depth).write(table)
   end
 

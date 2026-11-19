@@ -63,13 +63,19 @@ struct Server
   include FusedTOML::Serializable::Strict
 
   @[FusedTOML::Field(key: "listen-port")]
-  getter port : UInt16
+  property port : UInt16
   getter enabled : Bool = true
   getter hostname : String?
 end
 
 servers = FusedTOML.load("[edge]\nlisten-port = 443", Hash(String, Server))
 servers["edge"].port # => 443_u16
+server = servers["edge"]
+server.port = 8443_u16
+servers["edge"] = server
+updated = FusedTOML.dump(servers)
+FusedTOML.load(updated, Hash(String, Server))["edge"].port # => 8443_u16
+FusedTOML.load(server.to_toml, Server).port # => 8443_u16
 ```
 
 `load(source, T, max_depth: 128)` parses and validates the entire document before constructing the model. Classes and structs map their instance variables by name. A field’s `key:` annotation is one literal key, including any dots it contains. Omitted fields keep their Crystal defaults. An omitted nilable field without a default receives `nil`. A present value must match the requested type, including when the field has a default.
@@ -78,12 +84,17 @@ Additional keys are ignored by default. Include `FusedTOML::Serializable::Strict
 
 Supported field types include strings, booleans, fixed-width integers, Float32 and Float64, the four TOML temporal types, nested models, `Array(T)`, and `Hash(String, T)`. Use `FusedTOML::Value` or `FusedTOML::Table` for dynamic sections. Integers must fit the destination type. Floating-point fields accept TOML floats, with rounding to Float32 when requested. Finite magnitudes above the Float32 range raise a mapping error.
 
-Use a field converter for application types or unions with multiple non-nil alternatives. Its `from_toml` method receives the resolved value. A converter exception is available as the mapping error’s `cause`.
+Use a field converter for application types or unions with multiple non-nil alternatives. Its `from_toml` method receives the resolved value. To write the model, provide `to_toml(field_value)` returning a `FusedTOML::Value` or a member type such as Int64, String or FusedTOML::Table. Read-only converters suffice for load-only consumers. Converter exceptions are available as the mapping error’s `cause`.
 
 ```crystal
 module DurationInSeconds
   def self.from_toml(value : FusedTOML::Value) : Time::Span
     value.as(Int64).seconds
+  end
+
+  def self.to_toml(value : Time::Span) : Int64
+    raise ArgumentError.new("expected whole seconds") unless value.nanoseconds.zero?
+    value.to_i
   end
 end
 
@@ -94,10 +105,16 @@ struct Job
   getter timeout : Time::Span
 end
 
-FusedTOML.load("timeout = 5", Job).timeout # => 5.seconds
+job = FusedTOML.load("timeout = 5", Job)
+job.timeout # => 5.seconds
+job.to_toml # => "timeout = 5\n"
 ```
 
 ## Writing TOML
+
+Serializable models provide `to_toml` and `to_toml(io)`. The corresponding `FusedTOML.dump(model)` and `FusedTOML.dump(model, io)` calls also accept typed string-keyed hashes. Typed writing builds a native table, then uses the semantic writer. All four methods accept `max_depth:`.
+
+Fields use the same wire keys as typed loading. False, zero, empty containers and non-nil defaults are emitted. A nil model field is omitted before conversion. If a nilable field has a non-nil default, reloading an omitted field restores that default. A nil array element or hash entry, a reference cycle, or an integer outside Int64 range raises `FusedTOML::EncodeError`; its `path` identifies the field or entry. Typed mapping finishes before writing to a supplied IO.
 
 ```crystal
 config = FusedTOML::Table.new

@@ -19,6 +19,7 @@ jobs:
       - run: crystal spec --order=random --error-on-warnings
       - run: crystal spec -Dfused_toml_force_scalar_string_scan --order=random --error-on-warnings
       - run: python3 scripts/check_doc_examples.py
+      - run: python3 scripts/check_typed_writing.py
       - run: go install github.com/toml-lang/toml-test/v2/cmd/toml-test@v2.2.0
       - run: |
           mkdir -p bin

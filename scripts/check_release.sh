@@ -20,6 +20,7 @@ crystal tool format --check src spec scripts bench
 crystal spec --release --threads 1 --order=4721 --error-on-warnings
 crystal spec -Dfused_toml_force_scalar_string_scan --threads 1 --order=7183 --error-on-warnings
 python3 scripts/check_doc_examples.py
+python3 scripts/check_typed_writing.py
 crystal build --release --no-debug --threads 1 --error-on-warnings scripts/toml_test_decoder.cr -o "$work/decoder"
 crystal build --release --no-debug --threads 1 --error-on-warnings scripts/toml_test_encoder.cr -o "$work/encoder"
 sha256sum "$work/decoder" "$work/encoder"

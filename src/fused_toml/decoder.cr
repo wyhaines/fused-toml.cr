@@ -11,33 +11,10 @@ module FusedTOML
 
   # :nodoc:
   class Decoder
-    @path = [] of String | Int32
-
-    def at(segment : String | Int32, &)
-      @path << segment
-      begin
-        yield
-      ensure
-        @path.pop
-      end
-    end
+    include MappingPath
 
     def reject(message, cause = nil) : NoReturn
-      path = String.build do |io|
-        io << '$'
-        @path.each do |segment|
-          case segment
-          when Int32 then io << '[' << segment << ']'
-          when String
-            if /\A[A-Za-z0-9_-]+\z/.matches?(segment)
-              io << '.' << segment
-            else
-              io << '[' << segment.inspect << ']'
-            end
-          end
-        end
-      end
-      raise DecodeError.new(message, path, cause)
+      raise DecodeError.new(message, current_path, cause)
     end
 
     private def mismatch(expected, value) : NoReturn
