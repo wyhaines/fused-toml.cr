@@ -1,23 +1,27 @@
 # Release verification
 
-Run the following commands from the repository root with the Crystal compiler under test on PATH.
+Put the Crystal compiler you want to test on PATH, then run these commands from the repository root.
 
 ```sh
 go install github.com/toml-lang/toml-test/v2/cmd/toml-test@v2.2.0
 TOML_TEST="$(go env GOPATH)/bin/toml-test" sh scripts/check_release.sh
 ```
 
-The check prints tool versions and the source revision, checks shard dependencies and formatting, runs the specs in release mode and with the scalar scanner, and compiles and runs the five Crystal examples in the README. It runs a load-only converter consumer and checks compiler diagnostics for converters, wire keys, and mixed field and collection types. It builds the encoder and decoder with `--release --no-debug --threads 1`, records their SHA-256 digests, and runs the TOML 1.1 encoder and both String and IO decoder suites. Build digests identify the local binaries; paths and system toolchains can affect them.
+The script prints the tool versions and source revision, then checks shard dependencies and formatting. It runs the specs in release mode and with the scalar scanner. The remaining API checks compile and run the five Crystal examples in the README, run a program that uses a read-only converter, and check compiler diagnostics for converters, wire keys, and mixed field and collection types.
+
+The script builds the encoder and decoder with `--release --no-debug --threads 1`, records their SHA-256 digests, and runs the TOML 1.1 encoder suite and both decoder suites (String and IO). A digest identifies the binary from that build. Its value can depend on the build paths and system toolchain.
 
 ## Typed writer verification
 
-Revision `a184366` adds the typed writing API. Its release checks cover the load/edit/dump/reload workflow, byte parity with the semantic writer, converter compatibility and path-specific mapping failures. The compiler fixtures run a consumer with a read-only converter and separately check diagnostics for a missing reverse hook, an unsupported return type, duplicate wire keys and an ambiguous union.
+Commit `a184366` added the typed writing API. Its checks loaded a model, edited it, dumped it and loaded it again. They compared the output byte for byte with the semantic writer and checked that mapping errors reported the failing path.
 
-On Crystal 1.21.0 and 1.22.3, all 51 specs passed in both configurations. All five README examples and all five consumer checks passed. Each compiler passed 214 encoder cases and both sets of 214 valid and 467 invalid decoder cases. [Crystal 1.21.0 typed writing receipt](receipts/typed-writing-1.21.0.log) · [Crystal 1.22.3 typed writing receipt](receipts/typed-writing-1.22.3.log)
+The suite ran a program with a read-only converter to check compatibility. Separate compiler fixtures checked the diagnostics for a missing reverse hook, an unsupported return type, duplicate wire keys and an ambiguous union.
+
+Crystal 1.21.0 and 1.22.3 each passed all 51 specs in both configurations, all five README examples, and all five consumer checks. On each compiler the encoder passed 214 cases. The String and IO decoders each accepted 214 valid cases and rejected 467 invalid ones. [Crystal 1.21.0 results](receipts/typed-writing-1.21.0.log) · [Crystal 1.22.3 results](receipts/typed-writing-1.22.3.log)
 
 ## Initial development release checks
 
-The release check passed on Linux x86-64 at `27eab5b` with Crystal 1.21.0 (LLVM 20.1.8) and 1.22.3 (LLVM 22.1.3). The benchmarked revision `dd17a55` has identical parser and writer sources. The following counts apply to each compiler.
+On Linux x86-64, revision `27eab5b` passed the release check with Crystal 1.21.0 (LLVM 20.1.8) and 1.22.3 (LLVM 22.1.3). The benchmark used revision `dd17a55`, which has the same parser and writer sources. The counts below are for each compiler.
 
 | Check | Passed |
 | --- | ---: |
@@ -30,14 +34,14 @@ The release check passed on Linux x86-64 at `27eab5b` with Crystal 1.21.0 (LLVM 
 
 The logs include the commands, test results and release binary digests. [Crystal 1.21.0 receipt](receipts/release-1.21.0.log) · [Crystal 1.22.3 receipt](receipts/release-1.22.3.log)
 
-Both release adapters were rebuilt on the same host and checkout with a fresh `CRYSTAL_CACHE_DIR` for each compiler. All four SHA-256 digests matched the original builds. [Independent rebuild digests](receipts/rebuild.log)
+Rebuilding both release adapters on the same host and checkout, with a fresh `CRYSTAL_CACHE_DIR` for each compiler, reproduced all four original SHA-256 digests. [Independent rebuild digests](receipts/rebuild.log)
 
-The release review also caught a numeric dispatch error. A sufficiently long float such as `1.0e-000001` was classified as a date. The reader now checks both date separators and has a regression for String and IO inputs.
+During release testing, the reader mistook long float literals such as `1.0e-000001` for dates. It now checks for both date separators. A regression test covers String and IO inputs.
 
 ## Supported values and limitations
 
-- TOML integers fit in Int64. Dynamic floats use IEEE 754 binary64. Finite literals outside that range raise a parse error. The writer preserves negative zero and emits a single NaN spelling.
-- Dates, local times, local date-times and offset date-times have distinct Crystal types. Fractions are truncated to nanoseconds. The 0.1 series supports seconds 00–59. RFC 3339 also defines leap-second timestamps with second 60 at an actual insertion. This release rejects those on input and output. Accepting one would require an explicit policy for validating offset and local forms. [TOML 1.1 time grammar](https://github.com/toml-lang/toml/blob/1.1.0/toml.abnf) · [RFC 3339 §5.7](https://www.rfc-editor.org/rfc/rfc3339#section-5.7)
-- IO loading buffers a complete document. Set `max_document_bytes` to bound reads. Typed loading maps the resolved root table into the requested Crystal model. The writer emits deterministic TOML from a semantic table; source layout and comments are discarded during loading.
+- TOML integers must fit in Int64. The dynamic reader uses IEEE 754 binary64 for floats and raises a parse error for finite literals outside that range. The writer preserves negative zero and uses one spelling for NaN.
+- FusedTOML uses distinct Crystal types for dates, local times, local date-times and offset date-times. The reader truncates fractional seconds to nanoseconds. The 0.1 series accepts seconds 00 through 59. RFC 3339 permits second 60 at an actual leap-second insertion. The reader and writer both reject those timestamps. Supporting it would require rules for validating both local times and times with an offset. [TOML 1.1 time grammar](https://github.com/toml-lang/toml/blob/1.1.0/toml.abnf) · [RFC 3339 §5.7](https://www.rfc-editor.org/rfc/rfc3339#section-5.7)
+- The reader buffers the entire document when loading from IO. Set `max_document_bytes` to bound reads. Typed loading maps the resolved root table to the requested Crystal model. The reader discards source layout and comments. The writer produces deterministic TOML from the table.
 
-The [README](../README.md) contains runnable API examples. The [benchmark protocol](benchmarking.md) describes the separate native-tree comparison.
+For runnable API examples, see the [README](../README.md). For the separate comparison of native TOML trees, see the [benchmark protocol](benchmarking.md).

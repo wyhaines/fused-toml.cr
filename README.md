@@ -1,8 +1,8 @@
 # fused-toml.cr
 
-A native Crystal reader and writer for TOML 1.1. Load a complete document from a String or IO into a root table. Keys resolve directly into Crystal hashes and arrays, including dotted keys and arrays of tables.
+FusedTOML reads and writes TOML 1.1 in native Crystal. Load a document from a String or IO to get its root table. The reader resolves dotted keys and arrays of tables into Crystal hashes and arrays.
 
-FusedTOML parsed a 2,048-package lockfile in **2.84 ms** on a Core i9-12900HK. It had the lowest median parse time on all four inputs in a seven-parser comparison across Crystal, Ruby, Python, and Rust. [Benchmark results and methodology](docs/cross-language-benchmark.md)
+FusedTOML parsed a 2,048-package lockfile in **2.84 ms** on a Core i9-12900HK. Among seven parsers across Crystal, Ruby, Python, and Rust, it had the lowest median parse time on each of the four inputs. [Benchmark results and methodology](docs/cross-language-benchmark.md)
 
 ```crystal
 require "fused_toml"
@@ -12,7 +12,7 @@ port = config["server"].as(FusedTOML::Table)["port"].as(Int64)
 port # => 8080
 ```
 
-During local development, a consuming shard can use a path dependency:
+To use a local checkout from another shard, add a path dependency.
 
 ```yaml
 dependencies:
@@ -22,9 +22,13 @@ dependencies:
 
 ## Reader contract
 
-`FusedTOML::Value` includes String, Bool, Int64, Float64, Array(Value), Table, and four distinct temporal records. LocalDate, LocalTime and LocalDateTime contain calendar or clock fields. OffsetDateTime pairs a LocalDateTime with a UTC designator or signed offset. Fractional seconds are truncated to nanoseconds. The current reader accepts seconds 00 through 59. Integer overflow and out-of-range finite float literals raise a parse error. Document layout and comments are discarded after validation.
+`FusedTOML::Value` includes String, Bool, Int64, Float64, Array(Value), Table, and four date and time records. LocalDate, LocalTime and LocalDateTime hold calendar or clock fields. OffsetDateTime adds a UTC designator or signed offset to a LocalDateTime. The reader truncates fractional seconds to nanoseconds and accepts seconds 00 through 59.
 
-`FusedTOML.load(source, max_depth: 128)` counts each key segment and each descent into an array element. The root is at depth zero. Array-of-tables headers count their named segments. Allowed limits are 1 through 256. For invalid input, `FusedTOML::ParseError` exposes a zero-based byte offset and one-based line and Unicode column. Definition conflicts also identify the previous declaration.
+Integer overflow and out-of-range finite float literals raise a parse error. After validating the whole document, the reader discards its layout and comments.
+
+`FusedTOML.load(source, max_depth: 128)` starts at depth zero for the root. Each key segment adds one level, including named segments in array-of-tables headers. Descending into an array element also adds one level. You can set the limit from 1 to 256.
+
+On invalid input, `FusedTOML::ParseError` reports a zero-based byte offset and a one-based line and Unicode column. If two declarations conflict, the error also points to the earlier declaration.
 
 ## Reading from IO with limits
 
@@ -43,17 +47,19 @@ File.open("settings.toml") do |file|
 end
 ```
 
-Both `load(source)` and `load(source, T)` accept a borrowed IO. Loading reads raw UTF-8 bytes from the current position, accepts positive short reads, and treats the first zero-byte read as EOF. The caller retains ownership. IO errors propagate. The loader buffers the complete document before parsing, so use `max_document_bytes` to bound input retained from an open stream. At the cap it requests one more byte to distinguish EOF from overflow.
+Both `load(source)` and `load(source, T)` read raw UTF-8 bytes from the IO's current position and leave the stream open. A read can return fewer bytes than requested. The loader continues until a read returns zero bytes (EOF) and propagates any IO error.
 
-Limits are inclusive, accept zero, and default to disabled. `max_depth` remains a separate keyword.
+The loader buffers the whole document before parsing. Set `max_document_bytes` to bound how much input it retains from an open stream. At the limit it requests one more byte to distinguish an exact fit from an oversized document.
+
+The limits below are off by default. Each is inclusive and can be zero. Set the depth limit separately with `max_depth`.
 
 | Limit | What counts |
 | --- | --- |
-| `max_document_bytes` | Every input byte, including a leading BOM, comments and whitespace. Checked before UTF-8 and syntax validation. |
-| `max_token_bytes` | Source bytes in one key component, scalar, comment or punctuation token. Quotes, escape spellings, and multiline continuations count in full. The space between a date and time is part of that scalar. A comment includes its initial `#` and ends before the newline. |
-| `max_tokens` | One per key component, scalar, comment and punctuation byte outside them. Each bracket in `[[name]]` counts separately. Layout and the initial BOM contribute zero tokens. |
+| `max_document_bytes` | Every input byte, including a leading BOM, comments and whitespace. The reader checks the size before validating UTF-8 or TOML syntax. |
+| `max_token_bytes` | All source bytes in a single key component, scalar, comment or punctuation token, including quotes, escape spellings and multiline continuations. A date-time scalar includes the space between its date and time, if present. A comment starts at the `#` and ends before the newline. |
+| `max_tokens` | Each key component, scalar and comment counts once, as does each punctuation byte outside those tokens. Each bracket in `[[name]]` counts separately. Whitespace outside tokens and the initial BOM count as zero. |
 
-Exceeding a budget raises `FusedTOML::LimitError`, a `ParseError` with `limit_name` and `maximum`. Its location identifies the first disallowed byte or token. A byte inside a multibyte Unicode character points to that character’s column. Definition conflicts expose the earlier declaration through `previous_offset`, `previous_line`, and `previous_column`. Locations are relative to the start of the document.
+If the input exceeds a limit, `FusedTOML::LimitError` reports the first byte or token over budget. It's a `ParseError` with two additional fields, `limit_name` and `maximum`. All locations are relative to the start of the document. If the byte limit falls inside a multibyte character, the column points to that character. For conflicting definitions, `previous_offset`, `previous_line`, and `previous_column` give the location of the earlier declaration.
 
 ## Loading typed configurations
 
@@ -80,13 +86,17 @@ FusedTOML.load(updated, Hash(String, Server))["edge"].port # => 8443_u16
 FusedTOML.load(server.to_toml, Server).port # => 8443_u16
 ```
 
-`load(source, T, max_depth: 128)` parses and validates the entire document before constructing the model. Classes and structs map their instance variables by name. Subclasses inherit this mapping even when they define their own constructors. To construct a model with `Model.new` when all its fields have defaults, declare an empty, zero-argument `initialize` method. The mixin supplies its own initializer for loading. A field’s `key:` annotation takes a string literal, including any dots in the key. Omitted fields keep their Crystal defaults. An omitted nilable field without a default receives `nil`. A present value must match the requested type, including when the field has a default.
+`load(source, T, max_depth: 128)` parses and validates the whole document before constructing the model. The mixin maps TOML keys to class or struct instance variables by name. To use a different key, pass a string literal to the field's `key:` annotation. Any dots in that string belong to the key itself.
 
-Additional keys are ignored by default. Include `FusedTOML::Serializable::Strict` on each model that should reject them. Missing required fields, unexpected keys in strict models, type mismatches, and conversion failures raise `FusedTOML::DecodeError`. Its `path` identifies the field and array indices, for example `$.servers[1]["bind.port"]`. Malformed TOML still raises `FusedTOML::ParseError`.
+Subclasses inherit the mapping even if they define their own constructors. The mixin supplies an initializer for loading. If all the model's fields have defaults and you also want to call `Model.new`, declare an empty, zero-argument `initialize` method.
 
-Supported field types include strings, booleans, fixed-width integers, Float32 and Float64, the four TOML temporal types, nested models, `Array(T)`, and `Hash(String, T)`. Use `FusedTOML::Value` or `FusedTOML::Table` for dynamic sections. Integers must fit the destination type. Floating-point fields accept TOML floats, with rounding to Float32 when requested. Finite magnitudes above the Float32 range raise a mapping error.
+When a key is missing, the field keeps its Crystal default. A nilable field without a default gets `nil`. If the key is present, its value must match the field type even if the field has a default.
 
-Use a field converter for application types or unions with multiple non-nil alternatives. Its `from_toml` method receives the resolved value. To write the model, provide `to_toml(field_value)` returning a `FusedTOML::Value` or a member type such as Int64, String or FusedTOML::Table. Read-only converters suffice for load-only consumers. Converter exceptions are available as the mapping error’s `cause`.
+Models ignore unknown keys by default. Include `FusedTOML::Serializable::Strict` in each model that should reject them. A missing required field, an unknown key in a strict model, a type mismatch, or a failed conversion raises `FusedTOML::DecodeError`. Its `path` identifies the field and any array indices, as in `$.servers[1]["bind.port"]`. Malformed TOML raises `FusedTOML::ParseError` during parsing.
+
+Fields can hold strings, booleans, fixed-width integers, Float32 or Float64, any of the four TOML temporal types, nested models, `Array(T)`, or `Hash(String, T)`. Use `FusedTOML::Value` or `FusedTOML::Table` for dynamic sections. Integers must fit the destination type. Floating-point fields accept TOML floats. For Float32 fields, the loader rounds values to the available precision. A finite magnitude outside the Float32 range raises a mapping error.
+
+Use a field converter for application types and for unions with multiple non-nil alternatives. The loader passes the resolved value to `from_toml`. This method is enough if you only load the model. To write the model as well, implement `to_toml(field_value)` and return a `FusedTOML::Value` or one of its member types, such as Int64, String or FusedTOML::Table. If a converter raises an exception, the mapping error keeps it as its `cause`.
 
 ```crystal
 module DurationInSeconds
@@ -114,9 +124,11 @@ job.to_toml # => "timeout = 5\n"
 
 ## Writing TOML
 
-Serializable models provide `to_toml` and `to_toml(io)`. The corresponding `FusedTOML.dump(model)` and `FusedTOML.dump(model, io)` calls also accept typed string-keyed hashes. Typed writing builds a native table, then uses the semantic writer. All four methods accept `max_depth:`.
+To write a Serializable model, call `to_toml` or `to_toml(io)`. You can also use `FusedTOML.dump(model)` and `FusedTOML.dump(model, io)` with a model or a typed hash with string keys. All four methods accept `max_depth:`. The typed writer maps the model to a native table and passes it to the semantic writer.
 
-Fields use the same wire keys as typed loading. False, zero, empty containers and non-nil defaults are emitted. A nil model field is omitted before conversion. If a nilable field has a non-nil default, reloading an omitted field restores that default. A nil array element or hash entry, a reference cycle, or an integer outside Int64 range raises `FusedTOML::EncodeError`; its `path` identifies the field or entry. Typed mapping finishes before writing to a supplied IO.
+The writer uses the same field names as the loader. It writes false, zero, empty containers and non-nil values that equal their defaults. It skips nil fields before calling any converter. If you set a nilable field to nil and it has a non-nil default, loading the document again restores that default.
+
+A nil array element or hash entry, a reference cycle, or an integer outside the Int64 range raises `FusedTOML::EncodeError`. Its `path` identifies the field or entry. The typed writer finishes mapping before it writes to the supplied IO.
 
 ```crystal
 config = {"port" => 8080_i64, "enabled" => true} of String => FusedTOML::Value
@@ -127,9 +139,11 @@ FusedTOML.dump(config, STDOUT)
 
 Declare arrays of mixed TOML values with `of FusedTOML::Value`. In hashes that compare keys by object identity, strings with identical contents name the same TOML key. The writer raises `FusedTOML::EncodeError` if two entries have that key.
 
-The writer sorts keys lexically within each table. It writes assignments first, then child sections. A nonempty array containing only tables becomes a sequence of `[[headers]]` when it can be expressed as sections. Mixed arrays keep their order and use inline tables. An empty root produces the single comment `# Empty document`.
+Within each table the writer sorts keys lexically and writes assignments before child sections. Where the document allows sections, a nonempty array of tables becomes a sequence of `[[headers]]`. Mixed arrays keep their order and use inline tables. An empty root produces the single comment `# Empty document`.
 
-Both overloads accept the same `max_depth` as the reader. Encoding preserves float values including negative zero, normalizes NaNs to `nan`, and emits UTC designators as `Z`. Invalid UTF-8, unrepresentable temporal fields, and excessive depth raise `FusedTOML::EncodeError`. The IO overload writes UTF-8 bytes at the stream’s current position and preserves its text encoding setting. The caller retains ownership of the stream. An encoding or IO error can leave a prefix written.
+Both overloads accept the same `max_depth` as the reader. The writer preserves float values, including negative zero. It uses `nan` for all NaNs and `Z` for UTC designators. Invalid UTF-8, unrepresentable temporal fields, and excessive depth raise `FusedTOML::EncodeError`.
+
+The IO overload writes UTF-8 bytes at the current position. It preserves the stream's text encoding setting and leaves the stream open for the caller. If encoding or IO fails after writing begins, the stream can contain part of the document.
 
 ## Development
 
@@ -152,4 +166,4 @@ See the [original Aloli benchmark](docs/benchmarking.md), [release checks and li
 
 FusedTOML is licensed under the [Apache License, Version 2.0](LICENSE).
 
-The word-at-a-time ASCII scanner and its scalar fallback are adapted from Kirk Haines's [FusedJSON scanner](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/src/fused_json/ascii_string_scanner.cr). The TOML version also detects DEL. The short-read IO spec helper comes from [FusedJSON’s streaming specs](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/spec/support/chunked_io.cr). The [FusedJSON MIT license notice](licenses/FusedJSON-MIT.txt) applies to those portions. The conformance runner is an external development tool.
+The word-at-a-time ASCII scanner and its scalar fallback come from Kirk Haines's [FusedJSON scanner](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/src/fused_json/ascii_string_scanner.cr), adapted here to detect DEL as well. The short-read IO spec helper comes from [FusedJSON's streaming specs](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/spec/support/chunked_io.cr). The [FusedJSON MIT license notice](licenses/FusedJSON-MIT.txt) applies to those portions. The conformance runner is an external development tool.
