@@ -57,6 +57,22 @@ describe FusedTOML do
     expect_raises(FusedTOML::ParseError) { FusedTOML.load("over=0x8000000000000000") }
   end
 
+  it "distinguishes a padded negative exponent from a date" do
+    source = "value = 1.0e-000001\nwhen = 2000-02-29 12:00:00"
+    [source, IO::Memory.new(source)].each do |input|
+      table = FusedTOML.load(input)
+      table["value"].should eq(0.1)
+      table["when"].should be_a(FusedTOML::LocalDateTime)
+    end
+  end
+
+  it "rejects second 60 consistently in the reader and writer" do
+    expect_raises(FusedTOML::ParseError) { FusedTOML.load("at=2016-12-31T23:59:60Z") }
+    table = FusedTOML::Table.new
+    table["at"] = FusedTOML::LocalTime.new(23, 59, 60, 0)
+    expect_raises(FusedTOML::EncodeError) { FusedTOML.dump(table) }
+  end
+
   it "rejects malformed input with a parse location" do
     ["x=2000-123☃", "x='a'\0", "a=1\r", "a=1\na=2", %q(x="\uD800"), "d=1900-02-29"].each do |source|
       expect_raises(FusedTOML::ParseError) { FusedTOML.load(source) }

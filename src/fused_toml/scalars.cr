@@ -13,7 +13,9 @@ module FusedTOML
     private def scalar : Value
       start = @pos
       scan_atom
-      if @pos - start == 10 && @bytes[start + 4] == '-'.ord && peek == ' ' && peek(3) == ':'
+      width = @pos - start
+      date = width >= 10 && @bytes[start + 7] == '-'.ord && @bytes[start + 4] == '-'.ord
+      if date && width == 10 && peek == ' ' && peek(3) == ':'
         advance
         scan_atom
       end
@@ -25,7 +27,7 @@ module FusedTOML
       when "-inf"                then -Float64::INFINITY
       when "nan", "+nan", "-nan" then Float64::NAN
       else
-        if token.bytesize >= 10 && token.byte_at(4) == '-'.ord
+        if date
           temporal_date(token, start)
         elsif token.includes?(':')
           time, offset = temporal_time(token, start)
