@@ -1,0 +1,9 @@
+[package]
+name = "toml-bench-worker"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+toml = "=1.2.1"
+serde_json = "1"

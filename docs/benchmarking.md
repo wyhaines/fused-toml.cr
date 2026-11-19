@@ -1,5 +1,7 @@
 # Benchmarking dynamic TOML loading
 
+The [Dell cross-language benchmark](cross-language-benchmark.md) compares FusedTOML at `84de66a` with both released Crystal alternatives and parsers for Ruby, Python, and Rust on the same four fixtures.
+
 The comparison measures the time to materialize a root table from an in-memory String using `FusedTOML.load` and Aloli's `TOML.parse_to_hash`. Both are public APIs. Aloli v0.1.7 builds its formatting-preserving document, validates table semantics, and then builds the returned hash. This difference in work is part of the comparison. [Aloli implementation at the measured revision](https://github.com/aloli-crystal/toml/blob/3cd645c67b83ce5b055bb0ae041d68fc354c7281/src/toml.cr)
 
 ## Measured results

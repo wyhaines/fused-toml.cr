@@ -2,6 +2,8 @@
 
 A native Crystal reader and writer for TOML 1.1. Load a complete document from a String or IO into a root table. Keys resolve directly into Crystal hashes and arrays, including dotted keys and arrays of tables.
 
+FusedTOML parsed a 2,048-package lockfile in **2.84 ms** on a Core i9-12900HK. It had the lowest median parse time on all four inputs in a seven-parser comparison across Crystal, Ruby, Python, and Rust. [Benchmark results and methodology](docs/cross-language-benchmark.md)
+
 ```crystal
 require "fused_toml"
 
@@ -144,7 +146,7 @@ crystal build scripts/toml_test_encoder.cr -o bin/toml-test-encoder
 "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder "./bin/toml-test-decoder --io"
 ```
 
-On a quiet Core i9-12900HK, native String loading measured 5.03–5.74× faster than Aloli v0.1.7 on three small configurations and 7.06× faster on a generated 2,048-package lockfile. See the [benchmark protocol and raw results](docs/benchmarking.md), [release checks and limitations](docs/release.md), and [implementation plan](docs/plan.md).
+See the [original Aloli benchmark](docs/benchmarking.md), [release checks and limitations](docs/release.md), and [implementation plan](docs/plan.md).
 
 ## License and provenance
 
