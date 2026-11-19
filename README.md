@@ -24,6 +24,50 @@ dependencies:
 
 `FusedTOML.load(source, max_depth: 128)` counts each key segment and each descent into an array element. The root is at depth zero. Array-of-tables headers count their named segments. Allowed limits are 1 through 256. For invalid input, `FusedTOML::ParseError` exposes a zero-based byte offset and one-based line and Unicode column. Definition conflicts also identify the previous declaration.
 
+## Loading typed configurations
+
+```crystal
+require "fused_toml"
+
+struct Server
+  include FusedTOML::Serializable
+  include FusedTOML::Serializable::Strict
+
+  @[FusedTOML::Field(key: "listen-port")]
+  getter port : UInt16
+  getter enabled : Bool = true
+  getter hostname : String?
+end
+
+servers = FusedTOML.load("[edge]\nlisten-port = 443", Hash(String, Server))
+servers["edge"].port # => 443_u16
+```
+
+`load(source, T, max_depth: 128)` parses and validates the entire document before constructing the model. Classes and structs map their instance variables by name. A field’s `key:` annotation is one literal key, including any dots it contains. Omitted fields keep their Crystal defaults. An omitted nilable field without a default receives `nil`. A present value must match the requested type, including when the field has a default.
+
+Additional keys are ignored by default. Include `FusedTOML::Serializable::Strict` on each model that should reject them. Missing required fields, unexpected keys in strict models, type mismatches, and conversion failures raise `FusedTOML::DecodeError`. Its `path` identifies the field and array indices, for example `$.servers[1]["bind.port"]`. Malformed TOML still raises `FusedTOML::ParseError`.
+
+Supported field types include strings, booleans, fixed-width integers, Float32 and Float64, the four TOML temporal types, nested models, `Array(T)`, and `Hash(String, T)`. Use `FusedTOML::Value` or `FusedTOML::Table` for dynamic sections. Integers must fit the destination type. Floating-point fields accept TOML floats, with rounding to Float32 when requested. Finite magnitudes above the Float32 range raise a mapping error.
+
+Use a field converter for application types or unions with multiple non-nil alternatives. Its `from_toml` method receives the resolved value. A converter exception is available as the mapping error’s `cause`.
+
+```crystal
+module DurationInSeconds
+  def self.from_toml(value : FusedTOML::Value) : Time::Span
+    value.as(Int64).seconds
+  end
+end
+
+struct Job
+  include FusedTOML::Serializable
+
+  @[FusedTOML::Field(converter: DurationInSeconds)]
+  getter timeout : Time::Span
+end
+
+FusedTOML.load("timeout = 5", Job).timeout # => 5.seconds
+```
+
 ## Writing TOML
 
 ```crystal
@@ -53,7 +97,7 @@ crystal build scripts/toml_test_encoder.cr -o bin/toml-test-encoder
 "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder ./bin/toml-test-decoder -encoder ./bin/toml-test-encoder
 ```
 
-The typed configuration API and IO reader are planned. See the [specification and milestones](docs/plan.md).
+The next milestone adds IO input and resource limits. See the [specification and milestones](docs/plan.md).
 
 ## License and provenance
 

@@ -18,6 +18,8 @@ The String reader is the first deliverable. Advancing each later milestone requi
 
 ## Implementation status
 
-Milestones 1 and 2 are complete. On Crystal 1.22.3 (Linux x86-64), toml-test v2.2.0 passes all 214 valid decoder, 467 invalid decoder and 214 encoder cases for TOML 1.1. The 19 local reader and writer specs pass with both the default and scalar scanners. All 214 valid fixtures also passed a read/write/read comparison of native values and produced identical bytes on a second dump.
+Milestones 1 through 3 are complete. The typed loader maps resolved tables into Crystal classes, structs and typed collections. Its field, numeric and error-path contracts are documented in the [typed configuration guide](../README.md#loading-typed-configurations).
 
-Milestone 3 introduces typed configuration mapping. Before release, revisit the current 00–59 second range for leap-second inputs and verify the CI compiler matrix.
+On Linux x86-64, all 28 project specs pass with both the default and forced-scalar scanners on Crystal 1.21.0 and 1.22.3. On each compiler the default build passes toml-test v2.2.0 for TOML 1.1 (214 valid decoder, 467 invalid decoder and 214 encoder cases). The writer milestone also verified equivalent native values and stable output across read/write/read cycles for all 214 valid fixtures.
+
+Milestone 4 adds IO input, resource limits and diagnostics. Before release, revisit the 00–59 second range for leap-second inputs.
