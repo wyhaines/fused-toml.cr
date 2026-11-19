@@ -18,8 +18,12 @@ module FusedTOML
     @definitions = {} of Tuple(UInt64, String) => Definition
     @pos = 0
 
-    def initialize(@source : String, @max_depth : Int32)
+    @remaining_tokens : Int32?
+
+    def initialize(@source : String, @max_depth : Int32, @limits : Limits)
       @bytes = @source.to_slice
+      @token_end = @bytes.size
+      @remaining_tokens = @limits.max_tokens
     end
 
     def parse : Table
@@ -36,11 +40,11 @@ module FusedTOML
       depth = 0
       skip_layout
       until eof?
-        if take('[')
-          array = take('[')
+        if take_punctuation('[')
+          array = take_punctuation('[')
           keys = path(0)
-          expect(']')
-          expect(']') if array
+          expect_punctuation(']')
+          expect_punctuation(']') if array
           current = header(root, keys, array)
           depth = keys.size
         else
@@ -86,7 +90,7 @@ module FusedTOML
 
     private def assignment(table, depth)
       keys = path(depth)
-      expect('=')
+      expect_punctuation('=')
       spaces
       keys.each_with_index do |key, index|
         slot = {table.object_id, key.name}
@@ -117,48 +121,50 @@ module FusedTOML
         spaces
         check_depth(depth + keys.size + 1)
         start = @pos
-        if peek.in?('"', '\'')
-          name = string(multiline_allowed: false)
-        else
-          while (char = peek).ascii_alphanumeric? || char.in?('-', '_')
-            @pos += 1
-          end
-          fail_at("expected a key") if @pos == start
-          name = span(start)
-        end
+        name = token { read_key }
         keys << Key.new(name, start)
         spaces
-        break unless take('.')
+        break unless take_punctuation('.')
       end
       keys
+    end
+
+    private def read_key
+      return string(multiline_allowed: false) if peek.in?('"', '\'')
+      start = @pos
+      while (char = peek).ascii_alphanumeric? || char.in?('-', '_')
+        advance
+      end
+      fail_at("expected a key") if @pos == start
+      span(start)
     end
 
     private def value(depth) : Value
       check_depth(depth)
       case peek
-      when '"', '\'' then string
+      when '"', '\'' then token { string }
       when '['
-        @pos += 1
+        token { advance }
         array = [] of Value
         entries(']') { array << value(depth + 1) }
         array
       when '{'
-        @pos += 1
+        token { advance }
         table = Table.new
         entries('}') { assignment(table, depth) }
         table
       else
-        scalar
+        token { scalar }
       end
     end
 
     private def entries(close, &)
       skip_layout
-      until take(close)
+      until take_punctuation(close)
         yield
         skip_layout
-        break if take(close)
-        expect(',')
+        break if take_punctuation(close)
+        expect_punctuation(',')
         skip_layout
       end
     end
@@ -176,10 +182,13 @@ module FusedTOML
     end
 
     private def comment
-      return unless take('#')
-      until eof? || peek.in?('\n', '\r')
-        check_control
-        @pos += 1
+      return unless peek == '#'
+      token do
+        advance
+        until eof? || peek.in?('\n', '\r')
+          check_control
+          advance
+        end
       end
     end
 
@@ -199,13 +208,48 @@ module FusedTOML
 
     private def spaces
       while peek.in?(' ', '\t')
-        @pos += 1
+        advance
       end
+    end
+
+    # Token limits use the source spelling, including quotes and escape bytes.
+    # Layout outside tokens can use the full document. A failed parse discards
+    # the parser, so only successful tokens need to restore the scan boundary.
+    private def token(&)
+      if (remaining = @remaining_tokens) && !eof?
+        if remaining.zero?
+          raise LimitError.new(:max_tokens, @limits.max_tokens.not_nil!, @source, @pos)
+        end
+        @remaining_tokens = remaining - 1
+      end
+      if maximum = @limits.max_token_bytes
+        @token_end = @pos + Math.min(maximum, @bytes.size - @pos)
+      end
+      result = yield
+      @token_end = @bytes.size
+      result
+    end
+
+    private def advance(count = 1)
+      if count > @token_end - @pos
+        raise LimitError.new(:max_token_bytes, @limits.max_token_bytes.not_nil!, @source, @token_end)
+      end
+      @pos += count
+    end
+
+    private def take_punctuation(char)
+      return false unless peek == char
+      token { advance }
+      true
+    end
+
+    private def expect_punctuation(char)
+      fail_at("expected #{char.inspect}") unless take_punctuation(char)
     end
 
     private def take(char) : Bool
       return false unless peek == char
-      @pos += 1
+      advance
       true
     end
 

@@ -14,7 +14,7 @@ module FusedTOML
       start = @pos
       scan_atom
       if @pos - start == 10 && @bytes[start + 4] == '-'.ord && peek == ' ' && peek(3) == ':'
-        @pos += 1
+        advance
         scan_atom
       end
       token = span(start)
@@ -51,7 +51,7 @@ module FusedTOML
     private def scan_atom
       until eof? || peek.in?(' ', '\t', '\r', '\n', '#', ',', ']', '}')
         fail_at("expected ASCII in a bare value") if @bytes[@pos] >= 0x80
-        @pos += 1
+        advance
       end
     end
 

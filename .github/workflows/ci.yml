@@ -24,3 +24,4 @@ jobs:
           crystal build scripts/toml_test_decoder.cr -o bin/toml-test-decoder
           crystal build scripts/toml_test_encoder.cr -o bin/toml-test-encoder
           "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder ./bin/toml-test-decoder -encoder ./bin/toml-test-encoder
+          "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder "./bin/toml-test-decoder --io"

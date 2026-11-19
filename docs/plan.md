@@ -18,8 +18,8 @@ The String reader is the first deliverable. Advancing each later milestone requi
 
 ## Implementation status
 
-Milestones 1 through 3 are complete. The typed loader maps resolved tables into Crystal classes, structs and typed collections. Its field, numeric and error-path contracts are documented in the [typed configuration guide](../README.md#loading-typed-configurations).
+Milestones 1 through 4 are complete. Both dynamic and typed loaders accept a String or borrowed IO. The [IO and limits guide](../README.md#reading-from-io-with-limits) covers buffering, EOF, resource budgets and diagnostics. The [typed configuration guide](../README.md#loading-typed-configurations) describes field mapping.
 
-On Linux x86-64, all 28 project specs pass with both the default and forced-scalar scanners on Crystal 1.21.0 and 1.22.3. On each compiler the default build passes toml-test v2.2.0 for TOML 1.1 (214 valid decoder, 467 invalid decoder and 214 encoder cases). The writer milestone also verified equivalent native values and stable output across read/write/read cycles for all 214 valid fixtures.
+On Linux x86-64, all 40 project specs pass with the default and forced-scalar scanners on Crystal 1.21.0 and 1.22.3. On each compiler, toml-test v2.2.0 passes all 214 valid and 467 invalid TOML 1.1 decoder cases through both String and IO input, and all 214 encoder cases. Three-byte reads produced identical canonical output for every valid fixture and identical error messages and locations for every invalid fixture. CI runs both scanner spec configurations and both public input paths on the minimum and stable compilers.
 
-Milestone 4 adds IO input, resource limits and diagnostics. Before release, revisit the 00–59 second range for leap-second inputs.
+Milestone 5 covers performance measurement and release preparation. Before release, revisit the 00–59 second range for leap-second inputs.

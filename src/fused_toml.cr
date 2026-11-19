@@ -1,5 +1,7 @@
 require "./fused_toml/value"
 require "./fused_toml/error"
+require "./fused_toml/limits"
+require "./fused_toml/input"
 require "./fused_toml/parser"
 require "./fused_toml/writer"
 require "./fused_toml/serializable"
@@ -7,14 +9,14 @@ require "./fused_toml/decoder"
 
 module FusedTOML
   # Reads a complete TOML 1.1 document into a root table.
-  def self.load(source : String, *, max_depth : Int32 = 128) : Table
+  def self.load(source : String | IO, *, max_depth : Int32 = 128, limits : Limits = Limits::DEFAULT) : Table
     check_max_depth(max_depth)
-    Parser.new(source, max_depth).parse
+    Parser.new(Input.document(source, limits.max_document_bytes), max_depth, limits).parse
   end
 
   # Validates a complete document, then maps its root table to T.
-  def self.load(source : String, type : T.class, *, max_depth : Int32 = 128) : T forall T
-    Decoder.new.read(load(source, max_depth: max_depth), type)
+  def self.load(source : String | IO, type : T.class, *, max_depth : Int32 = 128, limits : Limits = Limits::DEFAULT) : T forall T
+    Decoder.new.read(load(source, max_depth: max_depth, limits: limits), type)
   end
 
   # Encodes the table as a deterministic TOML 1.1 document.

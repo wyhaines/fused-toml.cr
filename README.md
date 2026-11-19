@@ -1,6 +1,6 @@
 # fused-toml.cr
 
-A native Crystal reader and writer for TOML 1.1. Load a complete document from a String into a root table. Keys resolve directly into Crystal hashes and arrays, including dotted keys and arrays of tables.
+A native Crystal reader and writer for TOML 1.1. Load a complete document from a String or IO into a root table. Keys resolve directly into Crystal hashes and arrays, including dotted keys and arrays of tables.
 
 ```crystal
 require "fused_toml"
@@ -23,6 +23,35 @@ dependencies:
 `FusedTOML::Value` includes String, Bool, Int64, Float64, Array(Value), Table, and four distinct temporal records. LocalDate, LocalTime and LocalDateTime contain calendar or clock fields. OffsetDateTime pairs a LocalDateTime with a UTC designator or signed offset. Fractional seconds are truncated to nanoseconds. The current reader accepts seconds 00 through 59. Integer overflow and out-of-range finite float literals raise a parse error. Document layout and comments are discarded after validation.
 
 `FusedTOML.load(source, max_depth: 128)` counts each key segment and each descent into an array element. The root is at depth zero. Array-of-tables headers count their named segments. Allowed limits are 1 through 256. For invalid input, `FusedTOML::ParseError` exposes a zero-based byte offset and one-based line and Unicode column. Definition conflicts also identify the previous declaration.
+
+## Reading from IO with limits
+
+```crystal
+require "fused_toml"
+
+limits = FusedTOML::Limits.new(
+  max_document_bytes: 1_048_576,
+  max_token_bytes: 8192,
+  max_tokens: 100_000,
+)
+
+File.open("settings.toml") do |file|
+  ports = FusedTOML.load(file, Hash(String, UInt16), limits: limits)
+  puts ports["http"]
+end
+```
+
+Both `load(source)` and `load(source, T)` accept a borrowed IO. Loading reads raw UTF-8 bytes from the current position, accepts positive short reads, and treats the first zero-byte read as EOF. The caller retains ownership. IO errors propagate. The loader buffers the complete document before parsing, so use `max_document_bytes` to bound input retained from an open stream. At the cap it requests one more byte to distinguish EOF from overflow.
+
+Limits are inclusive, accept zero, and default to disabled. `max_depth` remains a separate keyword.
+
+| Limit | What counts |
+| --- | --- |
+| `max_document_bytes` | Every input byte, including a leading BOM, comments and whitespace. Checked before UTF-8 and syntax validation. |
+| `max_token_bytes` | Source bytes in one key component, scalar, comment or punctuation token. Quotes, escape spellings, and multiline continuations count in full. The space between a date and time is part of that scalar. A comment includes its initial `#` and ends before the newline. |
+| `max_tokens` | One per key component, scalar, comment and punctuation byte outside them. Each bracket in `[[name]]` counts separately. Layout and the initial BOM contribute zero tokens. |
+
+Exceeding a budget raises `FusedTOML::LimitError`, a `ParseError` with `limit_name` and `maximum`. Its location identifies the first disallowed byte or token. A byte inside a multibyte Unicode character points to that character’s column. Definition conflicts expose the earlier declaration through `previous_offset`, `previous_line`, and `previous_column`. Locations are relative to the start of the document.
 
 ## Loading typed configurations
 
@@ -95,10 +124,11 @@ mkdir -p bin
 crystal build scripts/toml_test_decoder.cr -o bin/toml-test-decoder
 crystal build scripts/toml_test_encoder.cr -o bin/toml-test-encoder
 "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder ./bin/toml-test-decoder -encoder ./bin/toml-test-encoder
+"$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder "./bin/toml-test-decoder --io"
 ```
 
-The next milestone adds IO input and resource limits. See the [specification and milestones](docs/plan.md).
+The next milestone covers benchmarking and release preparation. See the [specification and milestones](docs/plan.md).
 
 ## License and provenance
 
-MIT. The word-at-a-time ASCII scanner and its scalar fallback are adapted from Kirk Haines's [FusedJSON scanner](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/src/fused_json/ascii_string_scanner.cr). The TOML version also detects DEL. The conformance runner is an external development tool.
+MIT. The word-at-a-time ASCII scanner and its scalar fallback are adapted from Kirk Haines's [FusedJSON scanner](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/src/fused_json/ascii_string_scanner.cr). The TOML version also detects DEL. The short-read IO spec helper comes from [FusedJSON’s streaming specs](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/spec/support/chunked_io.cr). The conformance runner is an external development tool.

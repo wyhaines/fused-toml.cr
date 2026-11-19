@@ -46,7 +46,12 @@ private def emit(json : JSON::Builder, value : FusedTOML::Value) : Nil
 end
 
 begin
-  table = FusedTOML.load(STDIN.gets_to_end)
+  source = case ARGV
+           when [] of String then STDIN.gets_to_end
+           when ["--io"]     then STDIN
+           else                   abort "usage: toml-test-decoder [--io]"
+           end
+  table = FusedTOML.load(source)
   JSON.build(STDOUT) { |json| emit(json, table) }
 rescue ex : FusedTOML::ParseError
   STDERR.puts ex.message

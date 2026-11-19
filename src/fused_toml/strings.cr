@@ -3,17 +3,17 @@ module FusedTOML
     # Copy plain strings once. Only escapes and CRLF normalization need a builder.
     private def string(*, multiline_allowed = true) : String
       quote = peek
-      @pos += 1
+      advance
       multiline = multiline_allowed && peek == quote && peek(1) == quote
       if multiline
-        @pos += 2
+        advance(2)
         newline
       end
       basic = quote == '"'
       start = @pos
       builder = nil
       loop do
-        @pos = ASCIIStringScanner.find_special(@bytes, @pos, @bytes.size) if basic
+        @pos = ASCIIStringScanner.find_special(@bytes, @pos, @token_end) if basic
         fail_at("unterminated string") if eof?
         char = peek
         if char == quote
@@ -23,12 +23,12 @@ module FusedTOML
               run += 1
             end
             if run < 3
-              @pos += run
+              advance(run)
               next
             end
           end
           finish = @pos + (multiline ? run - 3 : 0)
-          @pos += run
+          advance(run)
           if builder
             builder.write(@bytes[start, finish - start])
             return builder.to_s
@@ -37,7 +37,7 @@ module FusedTOML
         elsif basic && char == '\\'
           builder ||= String::Builder.new
           builder.write(@bytes[start, @pos - start])
-          @pos += 1
+          advance
           escape(builder, multiline)
           start = @pos
         elsif multiline && char == '\r'
@@ -48,7 +48,7 @@ module FusedTOML
           start = @pos
         else
           check_control unless multiline && char == '\n'
-          @pos += 1
+          advance
         end
       end
     end
@@ -65,7 +65,7 @@ module FusedTOML
         return
       end
       fail_at("unterminated escape") if eof?
-      @pos += 1
+      advance
       case char
       when '"', '\\' then builder << char
       when 'b'       then builder << '\b'
@@ -87,7 +87,7 @@ module FusedTOML
       width.times do
         digit = peek.to_i?(16) || fail_at("expected hexadecimal digit")
         number = (number << 4) | digit.to_u32
-        @pos += 1
+        advance
       end
       if (0xd800..0xdfff).includes?(number) || number > 0x10ffff
         fail_at("invalid Unicode scalar", start)
