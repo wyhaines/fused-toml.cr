@@ -1,0 +1,25 @@
+name: Crystal
+on: [push, pull_request]
+permissions:
+  contents: read
+
+jobs:
+  reader:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        crystal: ["1.21.0", stable]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: crystal-lang/install-crystal@d8ef131ecec0352ce0e39b81b0a6d95def58fe2f # v1.9.2
+        with:
+          crystal: ${{ matrix.crystal }}
+      - run: shards check
+      - run: crystal tool format --check src spec scripts
+      - run: crystal spec --order=random --error-on-warnings
+      - run: crystal spec -Dfused_toml_force_scalar_string_scan --order=random --error-on-warnings
+      - run: go install github.com/toml-lang/toml-test/v2/cmd/toml-test@v2.2.0
+      - run: |
+          mkdir -p bin
+          crystal build scripts/toml_test_decoder.cr -o bin/toml-test-decoder
+          "$(go env GOPATH)/bin/toml-test" test -toml 1.1 -decoder ./bin/toml-test-decoder
