@@ -18,4 +18,6 @@ The String reader is the first deliverable. Advancing each later milestone requi
 
 ## Implementation status
 
-Milestone 1 passes the v2.2.0 decoder matrix for TOML 1.1 on Crystal 1.22.3 (Linux x86-64). Both scanner builds pass 214 valid and 467 invalid cases. Nine project specs cover details of the public API, including conflict locations, limits, and scanner boundaries. The next milestone is the semantic writer and its encoder adapter. Before release, revisit the current 00–59 second range for leap-second inputs and verify the CI compiler matrix.
+Milestones 1 and 2 are complete. On Crystal 1.22.3 (Linux x86-64), toml-test v2.2.0 passes all 214 valid decoder, 467 invalid decoder and 214 encoder cases for TOML 1.1. The 19 local reader and writer specs pass with both the default and scalar scanners. All 214 valid fixtures also passed a read/write/read comparison of native values and produced identical bytes on a second dump.
+
+Milestone 3 introduces typed configuration mapping. Before release, revisit the current 00–59 second range for leap-second inputs and verify the CI compiler matrix.

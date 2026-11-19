@@ -19,7 +19,6 @@ module FusedTOML
     @pos = 0
 
     def initialize(@source : String, @max_depth : Int32)
-      raise ArgumentError.new("max_depth must be between 1 and 256") unless (1..256).includes?(@max_depth)
       @bytes = @source.to_slice
     end
 

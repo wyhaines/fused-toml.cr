@@ -2,6 +2,6 @@ name: fused_toml
 version: 0.1.0-dev
 authors:
   - Kirk Haines <wyhaines@gmail.com>
-description: A native Crystal TOML reader
+description: A native Crystal TOML reader and writer
 crystal: ">= 1.21.0, < 2.0.0"
 license: MIT
