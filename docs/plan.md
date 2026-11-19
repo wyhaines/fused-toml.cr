@@ -23,3 +23,7 @@ All five implementation milestones are complete for the local development releas
 The release checks cover 42 specs, five README examples, and the TOML 1.1 String decoder, IO decoder and encoder suites. The [release verification report](release.md) records compiler versions, build commands, conformance receipts and supported temporal precision.
 
 The [benchmark report](benchmarking.md) compares equivalent native values on three small configurations and a generated lockfile. It includes all 48 observations, the fixture hashes and the commands for repeating the campaign on an idle host. The shard remains at `0.1.0-dev` pending a publication decision.
+
+## Planned follow-up
+
+The [typed writing plan](typed-writing.md) extends `FusedTOML::Serializable` to writing and defines the public round-trip, compatibility and release checks for that work.
