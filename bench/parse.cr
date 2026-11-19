@@ -21,13 +21,10 @@ private def equivalent?(left : FusedTOML::Value, right : TOML::Type) : Bool
   end
 end
 
-private class Sink(T)
-  class_property value : T?
-end
-
 private def measure(source, parse : Proc(T)) forall T
   job = Benchmark::IPS::Job.new(calculation: 2.seconds, warmup: 1.second, interactive: false)
-  entry = job.report("parse") { Sink(T).value = parse.call }
+  last = nil.as(T?)
+  entry = job.report("parse") { last = parse.call }
   job.execute
   puts({
     latency_us:       1_000_000 / entry.mean,
@@ -35,7 +32,7 @@ private def measure(source, parse : Proc(T)) forall T
     managed_bytes_op: entry.bytes_per_op,
     batches:          entry.size,
     rsd_percent:      entry.relative_stddev,
-    root_entries:     Sink(T).value.not_nil!.size,
+    root_entries:     last.not_nil!.size,
   }.to_json)
 end
 
