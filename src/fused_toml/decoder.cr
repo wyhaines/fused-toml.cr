@@ -44,7 +44,7 @@ module FusedTOML
         {% end %}
       {% elsif T < Serializable %}
         mismatch("table for #{T}", value) unless value.is_a?(Table)
-        T.new(__fused_toml_table: value, __fused_toml_decoder: self)
+        T.__fused_toml_decode(value, self)
       {% elsif T < Array %}
         read_array(value, type)
       {% elsif T < Hash %}

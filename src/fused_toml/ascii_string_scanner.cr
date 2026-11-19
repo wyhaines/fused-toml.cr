@@ -12,8 +12,6 @@ module FusedTOML
     {% if flag?(:fused_toml_force_scalar_string_scan) %}
       BACKEND = :scalar
 
-      # Returns the first quote, backslash, control byte, DEL, or non-ASCII byte in
-      # the bounded range, or *finish* when every byte is ordinary ASCII.
       def self.find_special(bytes : Bytes, start : Int32, finish : Int32) : Int32
         scalar_find_special(bytes, start, finish)
       end
@@ -34,12 +32,13 @@ module FusedTOML
       end
     {% end %}
 
+    # The parser validates UTF-8 before scanning, so multibyte text can pass through.
     @[AlwaysInline]
     private def self.scalar_find_special(bytes : Bytes, start : Int32, finish : Int32) : Int32
       index = start
       while index < finish
         byte = bytes[index]
-        return index if byte == 0x22_u8 || byte == 0x5c_u8 || byte < 0x20_u8 || byte >= 0x7f_u8
+        return index if byte == 0x22_u8 || byte == 0x5c_u8 || byte < 0x20_u8 || byte == 0x7f_u8
         index += 1
       end
       finish
@@ -62,8 +61,7 @@ module FusedTOML
       # The subtraction masks can also mark bytes after a true match because
       # of borrows. They cannot mark an earlier byte, so the first set byte is
       # always the first byte that needs full TOML handling.
-      (word & HIGH_BITS) |
-        zero_byte_mask(word ^ 0x7f7f_7f7f_7f7f_7f7f_u64) |
+      zero_byte_mask(word ^ 0x7f7f_7f7f_7f7f_7f7f_u64) |
         zero_byte_mask(word ^ QUOTES) |
         zero_byte_mask(word ^ BACKSLASHES) |
         ((word &- CONTROLS) & ~word & HIGH_BITS)

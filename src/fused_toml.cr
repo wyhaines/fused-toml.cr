@@ -2,6 +2,7 @@ require "./fused_toml/value"
 require "./fused_toml/error"
 require "./fused_toml/limits"
 require "./fused_toml/input"
+require "./fused_toml/bare_key"
 require "./fused_toml/parser"
 require "./fused_toml/writer"
 require "./fused_toml/serializable"
@@ -28,8 +29,7 @@ module FusedTOML
 
   # Writes the document to a borrowed IO. An error can leave a prefix written.
   def self.dump(table : Table, io : IO, *, max_depth : Int32 = 128) : Nil
-    check_max_depth(max_depth)
-    Writer.new(io, max_depth).write(table)
+    write_document(table, io, max_depth)
   end
 
   # Encodes the mapped fields of a model or typed string-keyed hash.
@@ -39,8 +39,17 @@ module FusedTOML
 
   # Maps the complete model before writing the document to a borrowed IO.
   def self.dump(model : Serializable | Hash, io : IO, *, max_depth : Int32 = 128) : Nil
+    write_document(model, io, max_depth)
+  end
+
+  private def self.write_document(value : T, io : IO, max_depth : Int32) : Nil forall T
     check_max_depth(max_depth)
-    table = Encoder.new(max_depth).encode(model, 0, true).as(Table)
+    # Narrower hashes can match the Table overload. Map them before entering the native writer.
+    table = {% if T == Table %}
+              value
+            {% else %}
+              Encoder.new(max_depth).encode(value, 0, true)
+            {% end %}
     Writer.new(io, max_depth).write(table)
   end
 

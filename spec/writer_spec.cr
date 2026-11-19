@@ -95,6 +95,20 @@ describe "FusedTOML.dump" do
     expect_raises(FusedTOML::EncodeError) { FusedTOML.dump(table) }
   end
 
+  it "round trips year zero and reports invalid days through the mapping API" do
+    source = "date = 0000-02-29\nlocal = 0000-01-01T00:00:00\noffset = 0000-12-31T23:59:59Z\n"
+    table = FusedTOML.load(source)
+    table["date"].should eq(FusedTOML::LocalDate.new(0, 2, 29))
+    FusedTOML.dump(table).should eq(source)
+
+    expect_raises(FusedTOML::ParseError) { FusedTOML.load("date = 0000-02-30") }.byte_offset.should eq(7)
+    invalid = FusedTOML::LocalDate.new(0, 2, 30)
+    table["date"] = invalid
+    expect_raises(FusedTOML::EncodeError) { FusedTOML.dump(table) }
+    error = expect_raises(FusedTOML::EncodeError) { FusedTOML.dump({"days" => [invalid]}) }
+    error.path.should eq("$.days[0]")
+  end
+
   it "counts output depth like the reader and bounds cyclic inputs" do
     table = FusedTOML.load("[[a]]\nb=[{c=1},0]", max_depth: 4)
     text = FusedTOML.dump(table, max_depth: 4)
@@ -120,5 +134,15 @@ describe "FusedTOML.dump" do
     [FusedTOML.load(""), FusedTOML.load("[empty]")].each do |table|
       FusedTOML.load(FusedTOML.dump(table)).should eq(table)
     end
+  end
+
+  it "writes UTF-8 bytes to IO with a different text encoding" do
+    io = IO::Memory.new
+    io.set_encoding("UTF-16LE")
+    io << "A"
+    table = FusedTOML.load(%q("雪"."é" = ["a\tb", 1.25]))
+    FusedTOML.dump(table, io)
+    io << "B"
+    io.to_slice.should eq(("A\0" + FusedTOML.dump(table) + "B\0").to_slice)
   end
 end

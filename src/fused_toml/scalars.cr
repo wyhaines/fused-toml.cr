@@ -36,7 +36,8 @@ module FusedTOML
         elsif DECIMAL.matches?(token)
           token.to_i64?(underscore: true) || fail_at("integer outside Int64 range", start)
         elsif FLOAT.matches?(token)
-          number = token.delete('_').to_f64?
+          token = token.delete('_') if token.includes?('_')
+          number = token.to_f64?
           fail_at("float outside Float64 range", start) unless number && number.finite?
           number
         else
@@ -59,11 +60,8 @@ module FusedTOML
 
     private def temporal_date(token, start)
       match = DATE.match(token.byte_slice(0, 10)) || fail_at("invalid date", start)
-      year, month, day = match[1].to_i, match[2].to_i, match[3].to_i
-      unless (1..12).includes?(month) && (1..Time.days_in_month(year, month)).includes?(day)
-        fail_at("invalid calendar date", start)
-      end
-      date = LocalDate.new(year, month, day)
+      date = LocalDate.new(match[1].to_i, match[2].to_i, match[3].to_i)
+      fail_at("invalid calendar date", start) unless date.valid?
       return date if token.bytesize == 10
       fail_at("invalid date-time delimiter", start + 10) unless token.byte_at(10).chr.in?('T', 't', ' ')
       time, offset = temporal_time(token.byte_slice(11), start + 11)

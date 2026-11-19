@@ -18,7 +18,7 @@ module FusedTOML
           case segment
           when Int32 then io << '[' << segment << ']'
           when String
-            if segment.valid_encoding? && /\A[A-Za-z0-9_-]+\z/.matches?(segment)
+            if BareKey.valid?(segment)
               io << '.' << segment
             else
               io << '[' << segment.inspect << ']'

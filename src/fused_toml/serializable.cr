@@ -22,6 +22,14 @@ module FusedTOML
     # Defer field discovery until Crystal specializes each generated method.
     # A load-only consumer therefore only instantiates the read converter.
     macro included
+      # :nodoc:
+      def self.__fused_toml_decode(table : ::FusedTOML::Table, decoder : ::FusedTOML::Decoder) : self
+        instance = allocate
+        instance.initialize(__fused_toml_table: table, __fused_toml_decoder: decoder)
+        ::GC.add_finalizer(instance) if instance.responds_to?(:finalize)
+        instance
+      end
+
       {% for direction in [:read, :write] %}
         # :nodoc:
         {% if direction == :read %}

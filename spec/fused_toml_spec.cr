@@ -29,6 +29,13 @@ describe FusedTOML do
     end.should eq([1_i64, 2_i64])
   end
 
+  it "reports the first array-of-tables declaration after repeated headers" do
+    error = expect_raises(FusedTOML::ParseError) { FusedTOML.load("[[s]]\n[[s]]\n[s]") }
+    error.previous_offset.should eq(2)
+    error.previous_line.should eq(1)
+    error.line.should eq(3)
+  end
+
   it "seals inline tables and distinguishes dots in a quoted component" do
     doc = FusedTOML.load(%("a.b" = { c = 1, }\na.b = false))
     doc["a.b"].as(FusedTOML::Table)["c"].should eq(1_i64)
@@ -83,7 +90,7 @@ describe FusedTOML do
 
   it "handles control bytes and escapes at every alignment of the basic-string scanner" do
     (0..23).each do |size|
-      prefix = "a" * size
+      prefix = "a" * size + "雪é😀"
       source = "k=\"#{prefix}\\x7f☃\\e\t!\""
       FusedTOML.load(source)["k"].should eq(prefix + "\u007f☃\e\t!")
       expect_raises(FusedTOML::ParseError) { FusedTOML.load("k=\"#{prefix}\u007f\"") }

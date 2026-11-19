@@ -14,10 +14,7 @@ module FusedTOML
     end
 
     def self.validate(date : LocalDate)
-      unless (0..9999).includes?(date.year) && (1..12).includes?(date.month) &&
-             (1..Time.days_in_month(date.year, date.month)).includes?(date.day)
-        raise EncodeError.new("invalid calendar date")
-      end
+      raise EncodeError.new("invalid calendar date") unless date.valid?
     end
 
     def self.validate(time : LocalTime)
@@ -48,7 +45,9 @@ module FusedTOML
     @path = [] of String
     @started = false
 
-    def initialize(@io : IO, @max_depth : Int32)
+    def initialize(io : IO, @max_depth : Int32)
+      # A UTF-8 wrapper forwards raw bytes without changing the borrowed IO's encoding.
+      @io = io.encoding == "UTF-8" ? io : IO::MultiWriter.new(io)
     end
 
     def write(table : Table) : Nil
@@ -148,7 +147,7 @@ module FusedTOML
     end
 
     private def write_key(key)
-      if !key.empty? && key.each_byte.all? { |byte| byte.chr.ascii_alphanumeric? || byte.chr.in?('-', '_') }
+      if BareKey.valid?(key)
         @io << key
       else
         write_string(key)

@@ -45,6 +45,14 @@ private module TypedLoadingSpec
     end
   end
 
+  class LabeledNode < Node
+    getter label : String
+
+    def initialize(name : String, @label : String)
+      super(name)
+    end
+  end
+
   struct Calendar
     include FusedTOML::Serializable
 
@@ -165,6 +173,13 @@ describe "FusedTOML.load(source, T)" do
     raw = FusedTOML.load("any=1\nmap={}\narray=[]\noptional=false\nflags=[false]", TypedLoadingSpec::Raw)
     raw.optional.should eq(false)
     raw.flags.should eq([false])
+  end
+
+  it "loads inherited and local fields when a subclass has its own constructor" do
+    model = TypedLoadingSpec::LabeledNode.new("root", "test")
+    restored = FusedTOML.load(model.to_toml, TypedLoadingSpec::LabeledNode)
+    {restored.name, restored.label}.should eq({"root", "test"})
+    restored.children.should be_empty
   end
 
   it "validates the entire source and honors the depth limit before mapping" do

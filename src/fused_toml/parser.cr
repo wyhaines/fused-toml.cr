@@ -65,12 +65,14 @@ module FusedTOML
         prior = @definitions[slot]?
         if index + 1 == keys.size
           if array
-            conflict(key, prior) if prior && !prior.kind.array_of_tables?
-            entries = prior ? table[key.name].as(Array(Value)) : [] of Value
             child = Table.new
-            entries << child
-            table[key.name] = entries
-            @definitions[slot] ||= Definition.new(:array_of_tables, key.offset)
+            if prior
+              conflict(key, prior) unless prior.kind.array_of_tables?
+              table[key.name].as(Array(Value)) << child
+            else
+              table[key.name] = [child] of Value
+              @definitions[slot] = Definition.new(:array_of_tables, key.offset)
+            end
             return child
           end
           conflict(key, prior) if prior && !prior.kind.implicit?
@@ -132,7 +134,7 @@ module FusedTOML
     private def read_key
       return string(multiline_allowed: false) if peek.in?('"', '\'')
       start = @pos
-      while (char = peek).ascii_alphanumeric? || char.in?('-', '_')
+      while !eof? && BareKey.byte?(@bytes[@pos])
         advance
       end
       fail_at("expected a key") if @pos == start
