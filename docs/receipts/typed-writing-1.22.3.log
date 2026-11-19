@@ -1,0 +1,55 @@
++ git rev-parse HEAD
+a184366fc8b03d22996eac1e98cad8e977e16b92
++ crystal --version
+Crystal 1.22.3 [3462c0774] (2026-11-13)
+
+LLVM: 22.1.3
+Default target: x86_64-unknown-linux-gnu
++ shards --version
+Shards 0.20.0 [b2b98ca] (2025-12-19)
++ /tmp/fused-toml-work.SQDJCd6u/tools/toml-test version
+toml-test v2.2.0; go1.23.1 linux/amd64; race=false; cgo=true
++ shards check
+I: Dependencies are satisfied
++ crystal tool format --check src spec scripts bench
++ crystal spec --release --threads 1 --order=4721 --error-on-warnings
+Randomized with seed: 4721
+...................................................
+
+Finished in 16.94 milliseconds
+51 examples, 0 failures, 0 errors, 0 pending
+Randomized with seed: 4721
++ crystal spec -Dfused_toml_force_scalar_string_scan --threads 1 --order=7183 --error-on-warnings
+Randomized with seed: 7183
+...................................................
+
+Finished in 52.2 milliseconds
+51 examples, 0 failures, 0 errors, 0 pending
+Randomized with seed: 7183
++ python3 scripts/check_doc_examples.py
+8080
+enabled = true
+port = 8080
+5 README examples passed
++ python3 scripts/check_typed_writing.py
+load_only: expected compiler result
+missing_hook: expected compiler result
+invalid_result: expected compiler result
+duplicate_key: expected compiler result
+union_field: expected compiler result
++ crystal build --release --no-debug --threads 1 --error-on-warnings scripts/toml_test_decoder.cr -o /tmp/tmp.6hUcvuQ3t0/decoder
++ crystal build --release --no-debug --threads 1 --error-on-warnings scripts/toml_test_encoder.cr -o /tmp/tmp.6hUcvuQ3t0/encoder
++ sha256sum /tmp/tmp.6hUcvuQ3t0/decoder /tmp/tmp.6hUcvuQ3t0/encoder
+b87c78c21fc418820d4da85e50bd29b5913222e5a0dfa3dcd7f40705b2dda9e9  /tmp/tmp.6hUcvuQ3t0/decoder
+0730779e34c65496e93711e32ea2ac31b789bcab2b1a63370759d4531360087c  /tmp/tmp.6hUcvuQ3t0/encoder
++ /tmp/fused-toml-work.SQDJCd6u/tools/toml-test test -toml 1.1 -parallel 1 -color never -decoder /tmp/tmp.6hUcvuQ3t0/decoder -encoder /tmp/tmp.6hUcvuQ3t0/encoder
+toml-test v2.2.0 [/tmp/tmp.6hUcvuQ3t0/decoder] [/tmp/tmp.6hUcvuQ3t0/encoder]
+  valid tests: 214 passed,  0 failed
+encoder tests: 214 passed,  0 failed
+invalid tests: 467 passed,  0 failed
++ /tmp/fused-toml-work.SQDJCd6u/tools/toml-test test -toml 1.1 -parallel 1 -color never -decoder /tmp/tmp.6hUcvuQ3t0/decoder --io
+toml-test v2.2.0 [/tmp/tmp.6hUcvuQ3t0/decoder --io] [no encoder]
+  valid tests: 214 passed,  0 failed
+encoder tests: no encoder command given
+invalid tests: 467 passed,  0 failed
++ rm -rf -- /tmp/tmp.6hUcvuQ3t0

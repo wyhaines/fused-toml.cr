@@ -7,9 +7,15 @@ go install github.com/toml-lang/toml-test/v2/cmd/toml-test@v2.2.0
 TOML_TEST="$(go env GOPATH)/bin/toml-test" sh scripts/check_release.sh
 ```
 
-The check prints tool versions and the source revision, checks shard dependencies and formatting, runs the specs in release mode and with the scalar scanner, and compiles and runs the five Crystal examples in the README. It builds the encoder and decoder with `--release --no-debug --threads 1`, records their SHA-256 digests, and runs the TOML 1.1 encoder and both String and IO decoder suites. Build digests identify the local binaries; paths and system toolchains can affect them.
+The check prints tool versions and the source revision, checks shard dependencies and formatting, runs the specs in release mode and with the scalar scanner, and compiles and runs the five Crystal examples in the README. It runs a load-only converter consumer and checks four expected compiler diagnostics for typed writing. It builds the encoder and decoder with `--release --no-debug --threads 1`, records their SHA-256 digests, and runs the TOML 1.1 encoder and both String and IO decoder suites. Build digests identify the local binaries; paths and system toolchains can affect them.
 
-## Verified development revision
+## Typed writer verification
+
+Revision `a184366` adds the typed writing API. Its release checks cover the load/edit/dump/reload workflow, byte parity with the semantic writer, converter compatibility and path-specific mapping failures. The compiler fixtures run a consumer with a read-only converter and separately check diagnostics for a missing reverse hook, an unsupported return type, duplicate wire keys and an ambiguous union.
+
+On Crystal 1.21.0 and 1.22.3, all 51 specs passed in both configurations. All five README examples and all five consumer checks passed. Each compiler passed 214 encoder cases and both sets of 214 valid and 467 invalid decoder cases. [Crystal 1.21.0 typed writing receipt](receipts/typed-writing-1.21.0.log) · [Crystal 1.22.3 typed writing receipt](receipts/typed-writing-1.22.3.log)
+
+## Initial development release checks
 
 The release check passed on Linux x86-64 at `27eab5b` with Crystal 1.21.0 (LLVM 20.1.8) and 1.22.3 (LLVM 22.1.3). The benchmarked revision `dd17a55` has identical parser and writer sources. The following counts apply to each compiler.
 

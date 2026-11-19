@@ -1,12 +1,12 @@
 # Typed TOML writing
 
-**Status** — proposed follow-up to the typed loader and semantic writer. Estimated effort is 1–3 developer-days, including tests and documentation.
+**Status** — implemented in `a184366`. The [typed writer specs](../spec/typed_writing_spec.cr) exercise the public API. The [consumer checks](../scripts/check_typed_writing.py) cover converter compatibility and compiler diagnostics. Both supported compilers passed the [release verification](release.md#typed-writer-verification).
 
 A caller who loads a configuration, edits a field, and writes the configuration should be able to use the same Crystal model throughout. Generate a conversion from the model to a `FusedTOML::Table`, then pass that table to the existing writer. This costs one intermediate tree and gives both APIs the same escaping, key order, section layout, and temporal formatting. [Field mapping](../src/fused_toml/serializable.cr) · [Semantic writer](../src/fused_toml/writer.cr)
 
 ## Public contract
 
-| Proposed call | Result |
+| Call | Result |
 | --- | --- |
 | `config.to_toml` or `FusedTOML.dump(config)` | A deterministic TOML String |
 | `config.to_toml(io)` or `FusedTOML.dump(config, io)` | Writes at the current position, leaves the IO open, and returns Nil |
@@ -14,7 +14,7 @@ A caller who loads a configuration, edits a field, and writes the configuration 
 
 Generate the instance methods on classes and structs that include `FusedTOML::Serializable`. All entry points take the existing `max_depth:` keyword, default 128 and valid range 1–256. The existing `dump(Table)` overload keeps its direct route to the writer.
 
-| Input | Proposed mapping |
+| Input | Mapping |
 | --- | --- |
 | Model fields | Use the external name from `@[FusedTOML::Field(key: ...)]` or the instance variable name. A dot in an annotated name belongs to that one key. Emit present values including false, zero, empty collections and values equal to their defaults. |
 | Nilable model field | Omit a nil field. Reloading an omitted field applies its Crystal default. For example, setting `description : String? = "default"` to nil and reloading yields `"default"`. |

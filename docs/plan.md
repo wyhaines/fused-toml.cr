@@ -20,10 +20,10 @@ The String reader is the first deliverable. Advancing each later milestone requi
 
 All five implementation milestones are complete for the local development release. Both dynamic and typed loaders accept a String or borrowed IO. The [IO and limits guide](../README.md#reading-from-io-with-limits) covers buffering, EOF, resource budgets and diagnostics. The [typed configuration guide](../README.md#loading-typed-configurations) describes field mapping.
 
-The release checks cover 42 specs, five README examples, and the TOML 1.1 String decoder, IO decoder and encoder suites. The [release verification report](release.md) records compiler versions, build commands, conformance receipts and supported temporal precision.
+The release checks cover the project specs, runnable README examples, typed-writer consumer compatibility, and the TOML 1.1 String decoder, IO decoder and encoder suites. The [release verification report](release.md) records compiler versions, build commands, conformance receipts and supported temporal precision.
 
 The [benchmark report](benchmarking.md) compares equivalent native values on three small configurations and a generated lockfile. It includes all 48 observations, the fixture hashes and the commands for repeating the campaign on an idle host. The shard remains at `0.1.0-dev` pending a publication decision.
 
-## Planned follow-up
+## Typed writing
 
-The [typed writing plan](typed-writing.md) extends `FusedTOML::Serializable` to writing and defines the public round-trip, compatibility and release checks for that work.
+Typed writing extends `FusedTOML::Serializable` and supports typed string-keyed hashes at the root. The [typed writing contract](typed-writing.md) describes the round-trip rules, converter compatibility and validation.
