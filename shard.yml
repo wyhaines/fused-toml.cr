@@ -4,4 +4,4 @@ authors:
   - Kirk Haines <wyhaines@gmail.com>
 description: A native Crystal TOML reader and writer
 crystal: ">= 1.21.0, < 2.0.0"
-license: MIT
+license: Apache-2.0

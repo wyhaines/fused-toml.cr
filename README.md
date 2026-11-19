@@ -148,4 +148,6 @@ On a quiet Core i9-12900HK, native String loading measured 5.03–5.74× faster 
 
 ## License and provenance
 
-MIT. The word-at-a-time ASCII scanner and its scalar fallback are adapted from Kirk Haines's [FusedJSON scanner](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/src/fused_json/ascii_string_scanner.cr). The TOML version also detects DEL. The short-read IO spec helper comes from [FusedJSON’s streaming specs](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/spec/support/chunked_io.cr). The conformance runner is an external development tool.
+FusedTOML is licensed under the [Apache License, Version 2.0](LICENSE).
+
+The word-at-a-time ASCII scanner and its scalar fallback are adapted from Kirk Haines's [FusedJSON scanner](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/src/fused_json/ascii_string_scanner.cr). The TOML version also detects DEL. The short-read IO spec helper comes from [FusedJSON’s streaming specs](https://github.com/wyhaines/fused-json.cr/blob/e06ba59c5c5e402a20425731f4a0acabaa02e3db/spec/support/chunked_io.cr). The [FusedJSON MIT license notice](licenses/FusedJSON-MIT.txt) applies to those portions. The conformance runner is an external development tool.
