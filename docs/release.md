@@ -7,7 +7,7 @@ go install github.com/toml-lang/toml-test/v2/cmd/toml-test@v2.2.0
 TOML_TEST="$(go env GOPATH)/bin/toml-test" sh scripts/check_release.sh
 ```
 
-The check prints tool versions and the source revision, checks shard dependencies and formatting, runs the specs in release mode and with the scalar scanner, and compiles and runs the five Crystal examples in the README. It runs a load-only converter consumer and checks four expected compiler diagnostics for typed writing. It builds the encoder and decoder with `--release --no-debug --threads 1`, records their SHA-256 digests, and runs the TOML 1.1 encoder and both String and IO decoder suites. Build digests identify the local binaries; paths and system toolchains can affect them.
+The check prints tool versions and the source revision, checks shard dependencies and formatting, runs the specs in release mode and with the scalar scanner, and compiles and runs the five Crystal examples in the README. It runs a load-only converter consumer and checks compiler diagnostics for converters, wire keys, and mixed field and collection types. It builds the encoder and decoder with `--release --no-debug --threads 1`, records their SHA-256 digests, and runs the TOML 1.1 encoder and both String and IO decoder suites. Build digests identify the local binaries; paths and system toolchains can affect them.
 
 ## Typed writer verification
 

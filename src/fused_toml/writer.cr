@@ -9,6 +9,10 @@ module FusedTOML
   end
 
   private module EncodingChecks
+    def self.reject_duplicate_key(key : String) : NoReturn
+      raise EncodeError.new("duplicate TOML key #{key.inspect}")
+    end
+
     def self.validate(string : String)
       raise EncodeError.new("invalid UTF-8 string") unless string.valid_encoding?
     end
@@ -59,7 +63,7 @@ module FusedTOML
     end
 
     private def write_body(table : Table) : Nil
-      sections, assignments = table.keys.sort!.partition do |key|
+      sections, assignments = sorted_keys(table).partition do |key|
         value = table[key]
         value.is_a?(Hash) || array_of_tables?(value)
       end
@@ -94,6 +98,14 @@ module FusedTOML
       value.is_a?(Array) && !value.empty? && value.all?(&.is_a?(Hash))
     end
 
+    private def sorted_keys(table)
+      keys = table.keys.sort!
+      if table.compare_by_identity?
+        keys.each_cons_pair { |left, right| EncodingChecks.reject_duplicate_key(right) if left == right }
+      end
+      keys
+    end
+
     private def write_header(*, array : Bool)
       @io << '\n' if @started
       @io << (array ? "[[" : "[")
@@ -107,7 +119,7 @@ module FusedTOML
       case value
       when Hash
         @io << '{'
-        value.keys.sort!.join(@io, ", ") do |key|
+        sorted_keys(value).join(@io, ", ") do |key|
           write_key(key)
           @io << " = "
           write_inline(value[key], depth + 1)

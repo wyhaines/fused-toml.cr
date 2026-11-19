@@ -118,17 +118,25 @@ module FusedTOML
     end
 
     private def path(depth)
+      first = path_component(depth + 1)
+      return {first} unless take_punctuation('.')
+
       keys = [] of Key
+      keys << first
       loop do
-        spaces
-        check_depth(depth + keys.size + 1)
-        start = @pos
-        name = token { read_key }
-        keys << Key.new(name, start)
-        spaces
+        keys << path_component(depth + keys.size + 1)
         break unless take_punctuation('.')
       end
       keys
+    end
+
+    private def path_component(depth) : Key
+      spaces
+      check_depth(depth)
+      start = @pos
+      name = token { read_key }
+      spaces
+      Key.new(name, start)
     end
 
     private def read_key

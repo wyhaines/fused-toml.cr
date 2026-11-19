@@ -104,4 +104,16 @@ describe FusedTOML do
     end
     expect_raises(ArgumentError) { FusedTOML.load("", max_depth: 257) }
   end
+
+  it "scans literal quotes and controls at each word alignment" do
+    (0..15).each do |size|
+      text = ("x" * size) + %q(雪"\literal)
+      FusedTOML.load("k='#{text}'")["k"].should eq(text)
+      FusedTOML.load("k='''#{text}''\r\nnext'''''")["k"].should eq(text + "''\nnext''")
+      ['\0', '\u007f'].each do |control|
+        error = expect_raises(FusedTOML::ParseError) { FusedTOML.load("k='#{text}#{control}'") }
+        error.byte_offset.should eq(3 + text.bytesize)
+      end
+    end
+  end
 end

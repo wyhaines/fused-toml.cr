@@ -15,6 +15,10 @@ cases = [
     ("invalid_result", "FusedTOML.dump(InvalidResult.new)", ("InvalidConverter", "field duration", "Time::Span")),
     ("duplicate_key", "DuplicateKey.new.to_toml", ('Duplicate TOML field "port"',)),
     ("union_field", "AmbiguousField.new.to_toml", ("use a fusedtoml::field converter for union",)),
+    ("false_key_read", 'FusedTOML.load("port=1", FalseKey)', ("key must be a string literal", "FalseKey#port")),
+    ("nil_key_write", "NilKey.new.to_toml", ("key must be a string literal", "NilKey#port")),
+    ("mixed_hash", 'FusedTOML.dump({"host" => "localhost", "port" => 80_i64})', ("of String => FusedTOML::Value",)),
+    ("mixed_array", 'FusedTOML.dump({"items" => [1_i64, "two"]})', ("array literal", "of FusedTOML::Value")),
 ]
 
 with tempfile.TemporaryDirectory(prefix="fused-toml-consumer-") as tmp:

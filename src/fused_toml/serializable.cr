@@ -46,7 +46,7 @@ module FusedTOML
               {% keys = [] of StringLiteral %}
               {% for field in @type.instance_vars %}
                 {% options = field.annotation(::FusedTOML::Field) %}
-                {% key = (options && options[:key]) || field.name.stringify %}
+                {% key = options && options.named_args.has_key?(:key) ? options[:key] : field.name.stringify %}
                 {% converter = options && options[:converter] %}
                 {% unless key.is_a?(StringLiteral) %}
                   {% raise "FusedTOML::Field key must be a string literal on #{@type}##{field.name}" %}
@@ -78,7 +78,7 @@ module FusedTOML
                         %native = encoder.convert({{converter}}, { {{field.name}}: %value })
                         encoder.encode(%native, depth + 1, sections)
                       {% else %}
-                        encoder.check_type(typeof(@{{field.name}}))
+                        encoder.check_type(typeof(@{{field.name}}), self.class)
                         encoder.encode(%value, depth + 1, sections)
                       {% end %}
                     end

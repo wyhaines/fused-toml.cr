@@ -2,6 +2,21 @@ require "spec"
 require "../src/fused_toml"
 
 describe "FusedTOML.dump" do
+  it "rejects duplicate TOML keys in identity hashes at every table position" do
+    table = FusedTOML::Table.new.compare_by_identity
+    table["port"] = 1_i64
+    table["enabled"] = true
+    FusedTOML.load(FusedTOML.dump(table)).should eq(FusedTOML.load("port=1\nenabled=true"))
+
+    table[String.new("port".to_slice)] = 2_i64
+    section = FusedTOML::Table{"service" => table}
+    headers = FusedTOML::Table{"services" => [table] of FusedTOML::Value}
+    inline = FusedTOML::Table{"items" => [table, true] of FusedTOML::Value}
+    [table, section, headers, inline].each do |root|
+      expect_raises(FusedTOML::EncodeError, /duplicate TOML key "port"/) { FusedTOML.dump(root) }
+    end
+  end
+
   it "sorts assignments before sections independently of insertion order" do
     first = FusedTOML.load("[[z]]\nk=1\n[[z]]\nk=2\n[a]\nz=3\na=4")
     second = FusedTOML.load("a={a=4,z=3}\nz=[{k=1},{k=2}]")

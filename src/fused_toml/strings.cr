@@ -13,7 +13,7 @@ module FusedTOML
       start = @pos
       builder = nil
       loop do
-        @pos = ASCIIStringScanner.find_special(@bytes, @pos, @token_end) if basic
+        @pos = ASCIIStringScanner.find_special(@bytes, @pos, @token_end, basic)
         fail_at("unterminated string") if eof?
         char = peek
         if char == quote

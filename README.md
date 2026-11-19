@@ -78,7 +78,7 @@ FusedTOML.load(updated, Hash(String, Server))["edge"].port # => 8443_u16
 FusedTOML.load(server.to_toml, Server).port # => 8443_u16
 ```
 
-`load(source, T, max_depth: 128)` parses and validates the entire document before constructing the model. Classes and structs map their instance variables by name. Subclasses inherit this mapping even when they define their own constructors. A field’s `key:` annotation is one literal key, including any dots it contains. Omitted fields keep their Crystal defaults. An omitted nilable field without a default receives `nil`. A present value must match the requested type, including when the field has a default.
+`load(source, T, max_depth: 128)` parses and validates the entire document before constructing the model. Classes and structs map their instance variables by name. Subclasses inherit this mapping even when they define their own constructors. To construct a model with `Model.new` when all its fields have defaults, declare an empty, zero-argument `initialize` method. The mixin supplies its own initializer for loading. A field’s `key:` annotation takes a string literal, including any dots in the key. Omitted fields keep their Crystal defaults. An omitted nilable field without a default receives `nil`. A present value must match the requested type, including when the field has a default.
 
 Additional keys are ignored by default. Include `FusedTOML::Serializable::Strict` on each model that should reject them. Missing required fields, unexpected keys in strict models, type mismatches, and conversion failures raise `FusedTOML::DecodeError`. Its `path` identifies the field and array indices, for example `$.servers[1]["bind.port"]`. Malformed TOML still raises `FusedTOML::ParseError`.
 
@@ -117,13 +117,13 @@ Serializable models provide `to_toml` and `to_toml(io)`. The corresponding `Fuse
 Fields use the same wire keys as typed loading. False, zero, empty containers and non-nil defaults are emitted. A nil model field is omitted before conversion. If a nilable field has a non-nil default, reloading an omitted field restores that default. A nil array element or hash entry, a reference cycle, or an integer outside Int64 range raises `FusedTOML::EncodeError`; its `path` identifies the field or entry. Typed mapping finishes before writing to a supplied IO.
 
 ```crystal
-config = FusedTOML::Table.new
-config["port"] = 8080_i64
-config["enabled"] = true
+config = {"port" => 8080_i64, "enabled" => true} of String => FusedTOML::Value
 
 FusedTOML.dump(config) # => "enabled = true\nport = 8080\n"
 FusedTOML.dump(config, STDOUT)
 ```
+
+Declare arrays of mixed TOML values with `of FusedTOML::Value`. In hashes that compare keys by object identity, strings with identical contents name the same TOML key. The writer raises `FusedTOML::EncodeError` if two entries have that key.
 
 The writer sorts keys lexically within each table. It writes assignments first, then child sections. A nonempty array containing only tables becomes a sequence of `[[headers]]` when it can be expressed as sections. Mixed arrays keep their order and use inline tables. An empty root produces the single comment `# Empty document`.
 

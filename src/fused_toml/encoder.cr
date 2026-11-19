@@ -8,9 +8,15 @@ module FusedTOML
     def initialize(@max_depth : Int32)
     end
 
-    def check_type(type : T.class) forall T
+    def check_type(type : T.class, owner : C.class) forall T, C
       {% if T.union? && T != Value && T != Value? && T.union_types.reject { |t| t == Nil }.size > 1 %}
-        {% raise "Use a FusedTOML::Field converter for union #{T}" %}
+        {% if C < Hash %}
+          {% raise "For mixed TOML values (#{T}), declare the hash literal 'of String => FusedTOML::Value'" %}
+        {% elsif C < Array %}
+          {% raise "For mixed TOML values (#{T}), declare the array literal 'of FusedTOML::Value'" %}
+        {% else %}
+          {% raise "Use a FusedTOML::Field converter for union #{T}" %}
+        {% end %}
       {% end %}
     end
 
@@ -48,18 +54,21 @@ module FusedTOML
       {% unless K == String %}
         {% raise "TOML table keys must be String, got #{K}" %}
       {% end %}
-      check_type(V)
+      check_type(V, value.class)
       result = Table.new
       with_container(value) do
         value.each do |key, item|
-          field(result, key, depth + 1) { encode(item, depth + 1, sections) }
+          field(result, key, depth + 1) do
+            EncodingChecks.reject_duplicate_key(key) if value.compare_by_identity? && result.has_key?(key)
+            encode(item, depth + 1, sections)
+          end
         end
       end
       result
     end
 
     def encode(value : Array(E), depth, sections) : Array(Value) forall E
-      check_type(E)
+      check_type(E, value.class)
       with_container(value) do
         # Only arrays written as [[headers]] share their depth with each element.
         headers = sections && !value.empty? && value.all? { |v| v.is_a?(Hash) || v.is_a?(Serializable) }

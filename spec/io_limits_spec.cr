@@ -100,7 +100,7 @@ describe FusedTOML::Limits do
 
   it "counts raw bytes of each key, comment and scalar through its closing delimiter" do
     [{"", "bare-key", "=0"}, {"", %q("☃.x"), "=0"}, {"", "#😀abc", "\r\n"},
-     {"x=", "'''literal'''", ""}, {"x=", "\"\"\"a\\ \t\r\n    b\"\"\"\"\"", ""},
+     {"x=", "'''literal'''", ""}, {"x=", "'''雪雪雪''\t😀\r\nend'''", ""}, {"x=", "\"\"\"a\\ \t\r\n    b\"\"\"\"\"", ""},
      {"x=", %q("\U0001F600\u00FF\x1B"), ""}, {"x=", %q("雪é😀雪é😀"), ""}, {"x=", "2001-01-01 12:00:00Z", ""},
      {"x=", "0x7fff_ffff", ""}, {"x=", "'#{"x" * 33}'", ""}].each do |(prefix, literal, suffix)|
       source = prefix + literal + suffix

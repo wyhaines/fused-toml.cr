@@ -88,6 +88,22 @@ private module TypedWritingSpec
 end
 
 describe "typed TOML writing" do
+  it "reports the path of an identity hash collision before writing any bytes" do
+    ports = Hash(String, Int32).new.compare_by_identity
+    ports["http"] = 80
+    ports["https"] = 443
+    FusedTOML.load(FusedTOML.dump(ports)).should eq(FusedTOML.load("http=80\nhttps=443"))
+
+    ports[String.new("http".to_slice)] = 8080
+    expect_raises(FusedTOML::EncodeError) { FusedTOML.dump(ports) }.path.should eq("$.http")
+    io = IO::Memory.new
+    error = expect_raises(FusedTOML::EncodeError, /duplicate TOML key "http"/) do
+      FusedTOML.dump({"services" => [ports]}, io)
+    end
+    error.path.should eq("$.services[0].http")
+    io.size.should eq(0)
+  end
+
   it "loads, edits and dumps a model and a typed root hash through the public APIs" do
     config = FusedTOML.load(%(wait=5\n[[endpoints]]\n"bind.port"=80), TypedWritingSpec::Config)
     config.endpoints.first.port = 443_u16

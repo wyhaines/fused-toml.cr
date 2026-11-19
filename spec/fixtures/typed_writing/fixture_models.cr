@@ -48,3 +48,20 @@ struct AmbiguousField
   def initialize
   end
 end
+
+struct FalseKey
+  include FusedTOML::Serializable
+
+  @[FusedTOML::Field(key: false)]
+  getter port = 80
+end
+
+struct NilKey
+  include FusedTOML::Serializable
+
+  @[FusedTOML::Field(key: nil)]
+  getter port = 80
+
+  def initialize
+  end
+end
