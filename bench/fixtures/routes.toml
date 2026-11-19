@@ -1,0 +1,13 @@
+title = "Local \"preview\" routes"
+default_headers = { "X-Region" = "eu", "Cache-Control" = "no-cache" }
+
+[[route]]
+path = "/health"
+methods = ["GET", "HEAD"]
+upstream = "unix:///tmp/health.sock"
+
+[[route]]
+path = "/search"
+methods = ["GET"]
+upstream = "http://127.0.0.1:9191"
+weights = [0.25, 0.75]

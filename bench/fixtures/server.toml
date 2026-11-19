@@ -1,0 +1,12 @@
+name = "edge"
+enabled = true
+workers = 6
+request_timeout = 1.25
+
+[http]
+listen = "127.0.0.1"
+ports = [8080, 8443]
+
+[logging]
+level = "info"
+targets = ["stderr", "file"]

@@ -1,0 +1,14 @@
+# An application build manifest.
+[package]
+name = "weather-station"
+version = "2.4.1"
+authors = ["Léa", "Mori"]
+features = { metrics = true, tracing = false }
+
+[dependencies]
+"example.net/db" = "^1.6"
+codec = "~0.8"
+
+[build.release]
+optimize = true
+targets = ["linux-x86_64", "linux-aarch64"]
